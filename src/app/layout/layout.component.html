@@ -1,0 +1,55 @@
+<div class="min-h-screen bg-gray-200">
+  <!--topbar -->
+  <header class="bg-white border-b">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="flex items-center justify-between h-16">
+
+         <!-- Logo  -->
+        <div class="flex items-center gap-2 text-xl font-bold text-red-600">
+          น้ำพริกลูกทุ่งสุพรรณ
+        </div>
+<!-- เมนู topbarเดี๋ยวค่อยแก้ในอนาคตยังไม่รุ้ว่าจะใส่อะไรบ้าง -->
+        <nav class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
+          <a href="#" class="hover:text-red-500">ทั้งหมด</a>
+          <a href="#" class="hover:text-red-500">น้ำพริกมั้ง</a>
+          <a href="#" class="hover:text-red-500">น้ำพริกแหละ</a>
+          <a href="#" class="hover:text-red-500">สูตรโบราณมั้ง </a>
+        </nav>
+
+        <!-- Cart + User -->
+        <div class="flex items-center gap-5">
+
+          <!-- Cart -->
+          <div class="relative cursor-pointer">
+            <i class="pi pi-shopping-cart text-xl"></i>
+            <span
+              class="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full"
+            >
+              2
+            </span>
+          </div>
+
+          <!-- User -->
+          <div class="flex items-center gap-2 cursor-pointer">
+            <div
+              class="flex items-center justify-center w-8 h-8 text-sm font-semibold text-white bg-gray-400 rounded-full"
+            >
+              U
+            </div>
+            <span class="hidden sm:block text-sm font-medium">
+              User
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+
+  <main class="mx-auto max-w-6xl bg-white">
+    <!-- ตรงนี้คือ คือส่วนต่อของหน้าแต่ละหน้า เอาไว้ใช้คลุมเขียนไว้ให้มึงอ่านนะต้า อ่านด้วยจะได้ไม่ต้องเลื่อนหา เทสสีเทสเครื่องมือแล้ว -->
+<app-homepage></app-homepage>
+  </main>
+</div>
