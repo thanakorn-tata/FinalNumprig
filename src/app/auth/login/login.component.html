@@ -1,0 +1,25 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <form (ngSubmit)="submit()" class="bg-white p-8 rounded shadow w-96">
+    <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+
+    <input class="w-full mb-3 p-2 border rounded"
+           [(ngModel)]="form.username" name="username"
+           placeholder="Username" />
+
+    <input type="password"
+           class="w-full mb-3 p-2 border rounded"
+           [(ngModel)]="form.password" name="password"
+           placeholder="Password" />
+
+    <button class="w-full bg-orange-500 text-white py-2 rounded">
+      Login
+    </button>
+
+    <p class="text-red-500 mt-2" *ngIf="error">{{ error }}</p>
+
+    <p class="text-sm text-center mt-4">
+      ยังไม่มีบัญชี?
+      <a routerLink="/register" class="text-orange-500">สมัครสมาชิก</a>
+    </p>
+  </form>
+</div>
