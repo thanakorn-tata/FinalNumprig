@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HomepageComponent } from "../homepage/homepage.component";
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   imports: [
     CommonModule,
-    HomepageComponent
-],
+    RouterOutlet  // เปลี่ยนจาก HomepageComponent เป็น RouterOutlet
+  ],
   templateUrl: './layout.component.html'
 })
 export class LayoutComponent {

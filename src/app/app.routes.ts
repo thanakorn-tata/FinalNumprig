@@ -26,6 +26,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./homepage/homepage.component')
             .then(m => m.HomepageComponent)
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./product/product-management/product-management.component')
+            .then(m => m.ProductManagementComponent)
       }
 
       // 👉 เพิ่มหน้าอื่นใน layout ได้ตรงนี้
