@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';  // เพิ่ม RouterLink ตรงนี้
 import { AuthService } from '../auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   selector: 'app-login',
   templateUrl: './login.component.html',
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, RouterLink]  // เพิ่ม RouterLink ใน imports
 })
 export class LoginComponent {
 
