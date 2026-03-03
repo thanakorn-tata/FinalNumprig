@@ -1,46 +1,67 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './auth/auth.guard';
-import { LoginComponent } from './auth/login/login.component';
-import { RegisterComponent } from './auth/register/register.component';
-import { LayoutComponent } from './layout/layout.component';
+import { AdminGuard } from './auth/admin.guard';
 
 export const routes: Routes = [
-
-  // 🔓 ไม่ต้อง login
   {
     path: 'login',
-    component: LoginComponent
+    loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
   },
   {
     path: 'register',
-    component: RegisterComponent
+    loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent)
   },
 
+  // ===== User Routes =====
   {
     path: '',
-    component: LayoutComponent,
+    loadComponent: () => import('./layout/layout.component').then(m => m.LayoutComponent),
     canActivate: [AuthGuard],
     children: [
       {
         path: '',
-        loadComponent: () =>
-          import('./homepage/homepage.component')
-            .then(m => m.HomepageComponent)
+        loadComponent: () => import('./homepage/homepage.component').then(m => m.HomepageComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
+        path: 'checkout',    // ✅ หน้าชำระเงิน
+        loadComponent: () => import('./checkout/checkout.component').then(m => m.CheckoutComponent)
+      },
+      {
+        path: 'receipt/:id', // ✅ ใบเสร็จ
+        loadComponent: () => import('./receipt/receipt.component').then(m => m.ReceiptComponent)
+      }
+    ]
+  },
+
+  // ===== Admin Routes =====
+  {
+    path: 'admin',
+    loadComponent: () => import('./admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    canActivate: [AdminGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
       },
       {
         path: 'products',
-        loadComponent: () =>
-          import('./product/product-management/product-management.component')
-            .then(m => m.ProductManagementComponent)
+        loadComponent: () => import('./product/product-management/product-management.component').then(m => m.ProductManagementComponent)
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('./admin/admin-users/admin-users.component').then(m => m.AdminUsersComponent)
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./admin/admin-reports/admin-reports.component').then(m => m.AdminReportsComponent)
       }
-
-      // 👉 เพิ่มหน้าอื่นใน layout ได้ตรงนี้
-      // {
-      //   path: 'products',
-      //   loadComponent: () =>
-      //     import('./product/product.component')
-      //       .then(m => m.ProductComponent)
-      // }
     ]
-  }
+  },
+
+  { path: '**', redirectTo: '' }
 ];

@@ -36,7 +36,7 @@ export class RegisterComponent {
         this.success = 'สมัครสมาชิกสำเร็จ 🎉';
         setTimeout(() => this.router.navigate(['/login']), 1500);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = err.error || 'สมัครสมาชิกไม่สำเร็จ';
       }
     });

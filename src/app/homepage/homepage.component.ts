@@ -1,18 +1,12 @@
-// homepage.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-}
-
+import { ProductService } from '../product/product.service';
+import { Product } from '../product/product.model';
+import { AuthService } from '../auth/auth.service';
+import { CartService } from '../cart/cart.service';
+import { getImageUrl } from '../product/product.model';
 interface CarouselSlide {
   id: number;
   image: string;
@@ -28,9 +22,15 @@ interface CarouselSlide {
   styleUrls: ['./homepage.component.css']
 })
 export class HomepageComponent implements OnInit, OnDestroy {
-  searchText: string = '';
-  currentSlide: number = 0;
+  searchText = '';
+  currentSlide = 0;
   carouselInterval: any;
+  isAdmin = false;
+  isLoading = true;
+  getImageUrl = getImageUrl;
+  toastMessage = '';
+  toastVisible = false;
+  private toastTimeout: any;
 
   slides: CarouselSlide[] = [
     {
@@ -53,97 +53,48 @@ export class HomepageComponent implements OnInit, OnDestroy {
     }
   ];
 
-  products: Product[] = [
-    {
-      id: 1,
-      name: 'น้ำพริกเผา',
-      description: 'เผ็ดกำลังดี หอมกลิ่นกะปิ',
-      price: 50,
-      image: 'https://images.unsplash.com/photo-1596040033229-a0b55ee8b5c8?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    },
-    {
-      id: 2,
-      name: 'น้ำพริกปลาร้า',
-      description: 'แซ่บนัว อร่อยแบบอีสาน',
-      price: 60,
-      image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    },
-    {
-      id: 3,
-      name: 'น้ำพริกหนุ่ม',
-      description: 'รสชาติล้านนาแท้',
-      price: 55,
-      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    },
-    {
-      id: 4,
-      name: 'น้ำพริกกะปิ',
-      description: 'หอมกรุ่น เข้มข้น',
-      price: 65,
-      image: 'https://images.unsplash.com/photo-1596040033229-a0b55ee8b5c8?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    },
-    {
-      id: 5,
-      name: 'น้ำพริกปลาทู',
-      description: 'รสชาติเข้มข้น กลมกล่อม',
-      price: 70,
-      image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    },
-    {
-      id: 6,
-      name: 'น้ำพริกมะม่วง',
-      description: 'เปร้ยว หวาน อร่อย',
-      price: 45,
-      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    },
-    {
-      id: 7,
-      name: 'น้ำพริกลงเรือ',
-      description: 'รสชาติเข้มข้นจากใต้',
-      price: 75,
-      image: 'https://images.unsplash.com/photo-1596040033229-a0b55ee8b5c8?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    },
-    {
-      id: 8,
-      name: 'น้ำพริกมะเขือ',
-      description: 'หอมเครื่องเทศ อร่อยถูกปาก',
-      price: 50,
-      image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&h=300&fit=crop',
-      category: 'น้ำพริก'
-    }
-  ];
-
+  products: Product[] = [];
   filteredProducts: Product[] = [];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private productService: ProductService,
+    private auth: AuthService,
+    private cartService: CartService  // ✅ inject CartService
+  ) {}
 
   ngOnInit() {
-    this.filteredProducts = [...this.products];
     this.startCarousel();
+
+    this.auth.getUser().subscribe((user: any) => {
+      this.isAdmin = user?.role === 'ADMIN';
+    });
+
+    this.productService.getAllActive().subscribe({
+      next: (data: Product[]) => {
+        this.products = data;
+        this.filteredProducts = [...data];
+        this.isLoading = false;
+      },
+      error: () => { this.isLoading = false; }
+    });
   }
 
   ngOnDestroy() {
     this.stopCarousel();
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
   }
 
   startCarousel() {
-    this.carouselInterval = setInterval(() => {
-      this.nextSlide();
-    }, 5000);
+    this.carouselInterval = setInterval(() => this.nextSlide(), 5000);
   }
 
   stopCarousel() {
-    if (this.carouselInterval) {
-      clearInterval(this.carouselInterval);
-    }
+    if (this.carouselInterval) clearInterval(this.carouselInterval);
   }
+
+  onCarouselMouseEnter() { this.stopCarousel(); }
+  onCarouselMouseLeave() { this.startCarousel(); }
 
   nextSlide() {
     this.currentSlide = (this.currentSlide + 1) % this.slides.length;
@@ -160,27 +111,40 @@ export class HomepageComponent implements OnInit, OnDestroy {
   }
 
   searchProducts() {
-    if (!this.searchText.trim()) {
-      this.filteredProducts = [...this.products];
-    } else {
-      this.filteredProducts = this.products.filter(product =>
-        product.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-        product.description.toLowerCase().includes(this.searchText.toLowerCase())
-      );
-    }
+    const keyword = this.searchText.trim().toLowerCase();
+    this.filteredProducts = keyword
+      ? this.products.filter(p =>
+          p.name.toLowerCase().includes(keyword) ||
+          p.description.toLowerCase().includes(keyword))
+      : [...this.products];
   }
 
+  // ✅ เรียก API จริง
   addToCart(product: Product) {
-    console.log('เพิ่มสินค้าลงตะกร้า:', product);
-    alert(`เพิ่ม ${product.name} ลงตะกร้าเรียบร้อย!`);
+    this.cartService.addToCart(product.id).subscribe({
+      next: () => this.showToast(`เพิ่ม "${product.name}" ลงตะกร้าแล้ว! 🛒`),
+      error: (err) => {
+        if (err.status === 401) {
+          this.showToast('กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้า');
+        } else {
+          this.showToast('เพิ่มสินค้าไม่สำเร็จ');
+        }
+      }
+    });
   }
 
   viewProductDetail(product: Product) {
-    console.log('ดูรายละเอียดสินค้า:', product);
-    // this.router.navigate(['/product', product.id]);
+    this.router.navigate(['/product', product.id]);
   }
 
   goToProductManagement() {
     this.router.navigate(['/products']);
+  }
+
+  showToast(message: string) {
+    this.toastMessage = message;
+    this.toastVisible = true;
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => this.toastVisible = false, 3000);
   }
 }

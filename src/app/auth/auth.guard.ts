@@ -1,32 +1,20 @@
-import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
-import { map, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { map, take, filter } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthGuard implements CanActivate {
+export const AuthGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
 
-  constructor(
-    private auth: AuthService,
-    private router: Router
-  ) {}
-
-  canActivate() {
-    return this.auth.me().pipe(
-      map(user => {
-        if (user) {
-          return true;
-        }
-        this.router.navigate(['/login']);
-        return false;
-      }),
-      catchError(() => {
-        this.router.navigate(['/login']);
-        return of(false);
-      })
-    );
-  }
-}
+  return auth.getUser().pipe(
+    // ✅ รอจนกว่า user จะถูก load แล้ว (ไม่ใช่ undefined)
+    filter(user => user !== undefined),
+    take(1),
+    map(user => {
+      if (user) return true;
+      router.navigate(['/login']);
+      return false;
+    })
+  );
+};

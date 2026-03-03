@@ -1,16 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-  stock: number;
-}
+import { ProductService } from '../product.service';
+import { Product, getImageUrl } from '../product.model';
+import { ExportExcelService } from '../export-excel.service';
 
 @Component({
   selector: 'app-product-management',
@@ -20,149 +13,163 @@ interface Product {
   styleUrls: ['./product-management.component.css']
 })
 export class ProductManagementComponent implements OnInit {
+
   products: Product[] = [];
   filteredProducts: Product[] = [];
-  searchText: string = '';
+  searchText = '';
+  isLoading = true;
 
-  // Form data
-  productForm: Product = {
-    id: 0,
-    name: '',
-    description: '',
-    price: 0,
-    image: '',
-    category: '',
-    stock: 0
-  };
+  productForm: Product = this.emptyForm();
+  selectedImageFile: File | null = null;
+  imagePreviewUrl: string | null = null;
 
-  isEditing: boolean = false;
-  showModal: boolean = false;
+  isEditing = false;
+  showModal = false;
+  showDeleteModal = false;
+  productToDelete: Product | null = null;
 
-  categories: string[] = ['น้ำพริก', 'เครื่องปรุง', 'ของหวาน', 'ของทานเล่น'];
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  toastVisible = false;
+  private toastTimeout: any;
 
-  ngOnInit() {
-    this.loadProducts();
-  }
+  categories = ['น้ำพริก', 'เครื่องปรุง', 'ของหวาน', 'ของทานเล่น'];
+  getImageUrl = getImageUrl;
+
+  constructor(
+    private productService: ProductService,
+    private exportService: ExportExcelService   // ✅ inject
+  ) {}
+
+  ngOnInit() { this.loadProducts(); }
 
   loadProducts() {
-    // Mock data - ในการใช้งานจริงควรดึงจาก API
-    this.products = [
-      {
-        id: 1,
-        name: 'น้ำพริกเผา',
-        description: 'เผ็ดกำลังดี หอมกลิ่นกะปิ',
-        price: 50,
-        image: 'https://images.unsplash.com/photo-1596040033229-a0b55ee8b5c8?w=300&h=300&fit=crop',
-        category: 'น้ำพริก',
-        stock: 100
+    this.isLoading = true;
+    this.productService.getAll().subscribe({
+      next: (data: Product[]) => {
+        this.products = data;
+        this.applySearch();
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        name: 'น้ำพริกปลาร้า',
-        description: 'แซ่บนัว อร่อยแบบอีสาน',
-        price: 60,
-        image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&h=300&fit=crop',
-        category: 'น้ำพริก',
-        stock: 80
-      },
-      {
-        id: 3,
-        name: 'น้ำพริกหนุ่ม',
-        description: 'รสชาติล้านนาแท้',
-        price: 55,
-        image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&h=300&fit=crop',
-        category: 'น้ำพริก',
-        stock: 120
+      error: () => {
+        this.showToast('โหลดสินค้าไม่สำเร็จ', 'error');
+        this.isLoading = false;
       }
-    ];
-    this.filteredProducts = [...this.products];
+    });
   }
 
-  searchProducts() {
-    if (!this.searchText.trim()) {
-      this.filteredProducts = [...this.products];
-    } else {
-      this.filteredProducts = this.products.filter(product =>
-        product.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-        product.description.toLowerCase().includes(this.searchText.toLowerCase())
-      );
-    }
+  searchProducts() { this.applySearch(); }
+
+  private applySearch() {
+    const keyword = this.searchText.trim().toLowerCase();
+    this.filteredProducts = keyword
+      ? this.products.filter(p =>
+          p.name.toLowerCase().includes(keyword) ||
+          p.description.toLowerCase().includes(keyword))
+      : [...this.products];
+  }
+
+  // ✅ Export Excel
+  exportExcel() {
+    this.exportService.exportProducts(this.filteredProducts);
+    this.showToast('Export Excel สำเร็จ!');
+  }
+
+  toggleActive(product: Product) {
+    this.productService.toggleActive(product.id).subscribe({
+      next: (res) => {
+        product.active = res.active;
+        this.showToast(res.message);
+      },
+      error: () => this.showToast('เปลี่ยนสถานะไม่สำเร็จ', 'error')
+    });
   }
 
   openAddModal() {
     this.isEditing = false;
-    this.productForm = {
-      id: 0,
-      name: '',
-      description: '',
-      price: 0,
-      image: '',
-      category: '',
-      stock: 0
-    };
+    this.productForm = this.emptyForm();
+    this.selectedImageFile = null;
+    this.imagePreviewUrl = null;
     this.showModal = true;
   }
 
   openEditModal(product: Product) {
     this.isEditing = true;
     this.productForm = { ...product };
+    this.selectedImageFile = null;
+    this.imagePreviewUrl = getImageUrl(product.id);
     this.showModal = true;
   }
 
   closeModal() {
     this.showModal = false;
-    this.productForm = {
-      id: 0,
-      name: '',
-      description: '',
-      price: 0,
-      image: '',
-      category: '',
-      stock: 0
-    };
+    this.selectedImageFile = null;
+    this.imagePreviewUrl = null;
+    this.productForm = this.emptyForm();
+  }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      this.showToast('ไฟล์รูปต้องมีขนาดไม่เกิน 5MB', 'error');
+      return;
+    }
+    this.selectedImageFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => { this.imagePreviewUrl = e.target?.result as string; };
+    reader.readAsDataURL(file);
   }
 
   saveProduct() {
-    if (!this.productForm.name || !this.productForm.price || !this.productForm.category) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (!this.productForm['name'] || !this.productForm['price'] || !this.productForm['category']) {
+      this.showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
       return;
     }
-
     if (this.isEditing) {
-      // แก้ไขสินค้า
-      const index = this.products.findIndex(p => p.id === this.productForm.id);
-      if (index !== -1) {
-        this.products[index] = { ...this.productForm };
-        alert('แก้ไขสินค้าเรียบร้อยแล้ว');
-      }
+      this.productService.update(this.productForm, this.selectedImageFile ?? undefined).subscribe({
+        next: () => { this.showToast('แก้ไขสินค้าเรียบร้อย'); this.searchText = ''; this.closeModal(); this.loadProducts(); },
+        error: () => this.showToast('แก้ไขสินค้าไม่สำเร็จ', 'error')
+      });
     } else {
-      // เพิ่มสินค้าใหม่
-      const newId = this.products.length > 0
-        ? Math.max(...this.products.map(p => p.id)) + 1
-        : 1;
-      this.productForm.id = newId;
-      this.products.push({ ...this.productForm });
-      alert('เพิ่มสินค้าเรียบร้อยแล้ว');
+      if (!this.selectedImageFile) { this.showToast('กรุณาเลือกรูปภาพสินค้า', 'error'); return; }
+      this.productService.add(this.productForm, this.selectedImageFile).subscribe({
+        next: () => { this.showToast('เพิ่มสินค้าเรียบร้อย'); this.searchText = ''; this.closeModal(); this.loadProducts(); },
+        error: () => this.showToast('เพิ่มสินค้าไม่สำเร็จ', 'error')
+      });
     }
-
-    this.filteredProducts = [...this.products];
-    this.closeModal();
   }
 
-  deleteProduct(product: Product) {
-    const confirmed = confirm(`ต้องการลบสินค้า "${product.name}" หรือไม่?`);
-    if (confirmed) {
-      this.products = this.products.filter(p => p.id !== product.id);
-      this.filteredProducts = [...this.products];
-      alert('ลบสินค้าเรียบร้อยแล้ว');
-    }
+  confirmDelete(product: Product) { this.productToDelete = product; this.showDeleteModal = true; }
+  cancelDelete() { this.showDeleteModal = false; this.productToDelete = null; }
+
+  executeDelete() {
+    if (!this.productToDelete) return;
+    const name = this.productToDelete.name;
+    this.productService.delete(this.productToDelete.id).subscribe({
+      next: () => { this.showToast(`ลบ "${name}" แล้ว`); this.searchText = ''; this.showDeleteModal = false; this.productToDelete = null; this.loadProducts(); },
+      error: () => this.showToast('ลบสินค้าไม่สำเร็จ', 'error')
+    });
   }
 
   getTotalValue(): number {
-    return this.products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+    return this.products.reduce((sum, p) => sum + (p.price ?? 0) * (p.stock ?? 0), 0);
   }
 
   getLowStockCount(): number {
-    return this.products.filter(p => p.stock < 50).length;
+    return this.products.filter(p => (p.stock ?? 0) < 50).length;
+  }
+
+  showToast(message: string, type: 'success' | 'error' = 'success') {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.toastVisible = true;
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => this.toastVisible = false, 3000);
+  }
+
+  private emptyForm(): Product {
+    return { id: 0, name: '', description: '', price: 0, category: '', stock: 0, active: true };
   }
 }
