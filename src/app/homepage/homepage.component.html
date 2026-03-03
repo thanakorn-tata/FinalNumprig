@@ -1,137 +1,135 @@
-<!-- พื้นหลังเทาทั้งหน้า -->
-<div class="min-h-screen bg-gray-200">
-  <div class="max-w-6xl mx-auto bg-white shadow-xl">
+<!-- ======================================================
+     HOMEPAGE — Red · Orange · White Theme
+     ====================================================== -->
+<div class="min-h-screen" style="background:#fff5f5;">
+  <div class="max-w-6xl mx-auto bg-white shadow-2xl" style="border-top:4px solid #dc2626;">
+    <main class="pb-12">
 
-    <!-- ✅ Admin Menu Bar — แสดงเฉพาะ ADMIN -->
-    <!-- @if (isAdmin) {
-    <div class="flex items-center justify-between px-6 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
-      <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
-        </svg>
-        <span class="font-semibold text-white">โหมดผู้ดูแลระบบ</span>
-      </div>
-      <button
-        (click)="goToProductManagement()"
-        class="flex items-center gap-2 px-4 py-2 text-white transition transform rounded-lg shadow-md bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
-        <span class="font-medium">จัดการสินค้า</span>
-      </button>
-    </div>
-    } -->
-
-    <main class="px-6 pb-10">
-
-      <!-- Carousel Section -->
-      <section class="pt-6">
-        <!-- ✅ Pause carousel เมื่อ hover -->
-        <div
-          class="relative overflow-hidden shadow-2xl rounded-xl"
-          (mouseenter)="onCarouselMouseEnter()"
-          (mouseleave)="onCarouselMouseLeave()"
-        >
+      <!-- ─── CAROUSEL ─── -->
+      <section>
+        <div class="relative overflow-hidden shadow-2xl"
+          (mouseenter)="onCarouselMouseEnter()" (mouseleave)="onCarouselMouseLeave()">
           <div class="relative h-72 md:h-96">
             @for (slide of slides; track slide.id) {
-              <div
-                [ngClass]="{
-                  'opacity-100': currentSlide === $index,
-                  'opacity-0': currentSlide !== $index
-                }"
+              <div [ngClass]="{'opacity-100':currentSlide===$index,'opacity-0':currentSlide!==$index}"
                 class="absolute inset-0 transition-opacity duration-1000">
                 <img [src]="slide.image" [alt]="slide.title" class="object-cover w-full h-full" />
-                <div class="absolute inset-0 flex flex-col justify-end p-8 bg-gradient-to-t from-black/60 to-transparent">
-                  <h2 class="mb-2 text-4xl font-bold text-white">{{ slide.title }}</h2>
-                  <p class="text-xl text-white">{{ slide.subtitle }}</p>
+                <div class="absolute inset-0 flex flex-col justify-end p-8"
+                  style="background:linear-gradient(to top,rgba(153,27,27,0.85) 0%,rgba(194,65,12,0.4) 50%,transparent 100%);">
+                  <h2 class="mb-2 text-4xl font-extrabold tracking-tight text-white drop-shadow-lg">{{ slide.title }}</h2>
+                  <p class="text-lg font-medium text-orange-100">{{ slide.subtitle }}</p>
                 </div>
               </div>
             }
           </div>
-
-          <button (click)="prevSlide()" class="absolute p-3 transition -translate-y-1/2 rounded-full shadow-lg left-4 top-1/2 bg-white/80 hover:bg-white">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          <button (click)="prevSlide()"
+            class="absolute p-2.5 -translate-y-1/2 rounded-full shadow-lg left-4 top-1/2 hover:scale-110 transition"
+            style="background:rgba(255,255,255,0.92);">
+            <svg class="w-5 h-5" style="color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
-          <button (click)="nextSlide()" class="absolute p-3 transition -translate-y-1/2 rounded-full shadow-lg right-4 top-1/2 bg-white/80 hover:bg-white">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          <button (click)="nextSlide()"
+            class="absolute p-2.5 -translate-y-1/2 rounded-full shadow-lg right-4 top-1/2 hover:scale-110 transition"
+            style="background:rgba(255,255,255,0.92);">
+            <svg class="w-5 h-5" style="color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
             </svg>
           </button>
-
           <div class="absolute flex gap-2 -translate-x-1/2 bottom-4 left-1/2">
             @for (slide of slides; track slide.id) {
-              <button
-                (click)="goToSlide($index)"
-                [ngClass]="{
-                  'bg-white': currentSlide === $index,
-                  'bg-white/50': currentSlide !== $index
-                }"
-                class="w-3 h-3 transition rounded-full">
+              <button (click)="goToSlide($index)"
+                [style.background]="currentSlide===$index ? '#fff' : 'rgba(255,255,255,0.4)'"
+                [style.width]="currentSlide===$index ? '24px' : '10px'"
+                class="h-2.5 rounded-full transition-all duration-300">
               </button>
             }
           </div>
         </div>
       </section>
 
-      <!-- Search Section -->
-      <section class="mt-8">
+      <!-- ─── SEARCH ─── -->
+      <section class="px-6 mt-8">
         <div class="flex justify-center">
-          <div class="relative w-full max-w-md">
-            <input
-              type="text"
-              [(ngModel)]="searchText"
-              (input)="searchProducts()"
-              placeholder="ค้นหาน้ำพริก..."
-              class="w-full px-4 py-3 pl-12 transition border-2 border-gray-300 rounded-lg focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
-            />
-            <svg class="absolute w-5 h-5 text-gray-400 -translate-y-1/2 left-4 top-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+          <div class="w-full max-w-lg">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="flex-1 h-px" style="background:linear-gradient(to right,transparent,#fca5a5);"></div>
+              <span class="text-xs font-bold tracking-widest uppercase" style="color:#dc2626;">ค้นหาสินค้า</span>
+              <div class="flex-1 h-px" style="background:linear-gradient(to left,transparent,#fca5a5);"></div>
+            </div>
+            <div class="relative">
+              <input type="text" [(ngModel)]="searchText" (input)="searchProducts()"
+                placeholder="ค้นหาน้ำพริก เครื่องปรุง ..."
+                class="w-full py-3.5 pl-12 pr-4 text-sm font-medium text-gray-700 bg-white border-2 rounded-xl outline-none transition-all"
+                style="border-color:#fca5a5;box-shadow:0 2px 12px rgba(220,38,38,0.08);"
+                onfocus="this.style.borderColor='#dc2626';this.style.boxShadow='0 0 0 3px rgba(220,38,38,0.12)';"
+                onblur="this.style.borderColor='#fca5a5';this.style.boxShadow='0 2px 12px rgba(220,38,38,0.08)';" />
+              <svg class="absolute w-5 h-5 -translate-y-1/2 left-4 top-1/2" style="color:#dc2626;"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Products Section -->
-      <section class="mt-10">
+      <!-- ─── PRODUCTS ─── -->
+      <section class="px-6 mt-10">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-gray-800">สินค้าแนะนำ</h2>
-          <span class="text-sm text-gray-500">ทั้งหมด {{ filteredProducts.length }} รายการ</span>
+          <div class="flex items-center gap-3">
+            <div class="w-1 rounded-full h-7" style="background:linear-gradient(to bottom,#dc2626,#ea580c);"></div>
+            <h2 class="text-2xl font-extrabold" style="color:#1c1c1c;">สินค้าแนะนำ</h2>
+          </div>
+          <span class="text-xs font-semibold px-3 py-1.5 rounded-full"
+            style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;">
+            ทั้งหมด {{ filteredProducts.length }} รายการ
+          </span>
         </div>
 
-        @if (filteredProducts.length === 0) {
-          <div class="py-16 text-center">
-            <svg class="w-20 h-20 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <p class="text-lg text-gray-500">ไม่พบสินค้าที่ค้นหา</p>
+        @if (isLoading) {
+          <div class="flex justify-center py-16">
+            <div class="w-10 h-10 border-4 rounded-full border-t-transparent animate-spin"
+              style="border-color:#dc2626;border-top-color:transparent;"></div>
           </div>
         }
 
-        <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-          @for (product of filteredProducts; track product.id) {
-            <div class="overflow-hidden transition-all duration-300 transform bg-white border border-gray-200 rounded-xl hover:shadow-2xl hover:-translate-y-2">
-              <div
-                class="flex items-center justify-center h-48 overflow-hidden cursor-pointer bg-gradient-to-br from-red-50 to-orange-50 group"
-                (click)="viewProductDetail(product)">
-                <img
-                  [src]="getImageUrl(product.id)"
-                  [alt]="product.name"
-                  class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
-                />
+        @if (!isLoading && filteredProducts.length === 0) {
+          <div class="py-16 text-center">
+            <svg class="w-20 h-20 mx-auto mb-4" style="color:#fca5a5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="font-medium text-gray-400">ไม่พบสินค้าที่ค้นหา</p>
+          </div>
+        }
+
+        <!-- Product Grid -->
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+          @for (product of pagedProducts; track product.id) {
+            <div class="overflow-hidden transition-all duration-300 bg-white border group rounded-2xl hover:-translate-y-1"
+              style="border-color:#ffe4e6;box-shadow:0 2px 8px rgba(0,0,0,0.06);"
+              onmouseenter="this.style.boxShadow='0 12px 32px rgba(220,38,38,0.18)';this.style.borderColor='#fca5a5';"
+              onmouseleave="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';this.style.borderColor='#ffe4e6';">
+
+              <div class="relative overflow-hidden cursor-pointer h-44" (click)="viewProductDetail(product)">
+                <img [src]="getImageUrl(product.id)" [alt]="product.name"
+                  class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" />
+                <div class="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                  style="background:linear-gradient(to top,rgba(220,38,38,0.18),transparent 60%);"></div>
               </div>
-              <div class="p-4">
-                <h3 class="mb-1 text-lg font-bold text-gray-800">{{ product.name }}</h3>
-                <p class="mb-3 text-sm text-gray-600">{{ product.description }}</p>
+
+              <div class="p-3.5">
+                <h3 class="text-sm font-bold text-gray-900 mb-0.5 truncate">{{ product.name }}</h3>
+                <p class="mb-3 text-xs leading-relaxed text-gray-400 line-clamp-2">{{ product.description }}</p>
                 <div class="flex items-center justify-between">
-                  <span class="text-xl font-bold text-red-600">฿{{ product.price }}</span>
-                  <button
-                    (click)="addToCart(product)"
-                    class="px-4 py-2 text-sm text-white transition-all transform rounded-lg shadow-md bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-lg hover:scale-105">
-                    <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  <span class="text-lg font-extrabold" style="color:#dc2626;">฿{{ product.price }}</span>
+                  <button (click)="addToCart(product)"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all hover:scale-105 active:scale-95"
+                    style="background:linear-gradient(135deg,#dc2626,#ea580c);box-shadow:0 2px 8px rgba(220,38,38,0.35);">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
                     ใส่ตะกร้า
                   </button>
@@ -140,27 +138,77 @@
             </div>
           }
         </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1) {
+          <div class="flex items-center justify-center gap-1.5 mt-10">
+            <button (click)="goToPage(1)" [disabled]="currentPage===1"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">«</button>
+            <button (click)="goToPage(currentPage-1)" [disabled]="currentPage===1"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">‹</button>
+
+            @for (page of pageNumbers; track page) {
+              <button (click)="goToPage(page)"
+                class="flex items-center justify-center text-sm font-bold transition rounded-lg w-9 h-9"
+                [style.background]="currentPage===page ? 'linear-gradient(135deg,#dc2626,#ea580c)' : 'transparent'"
+                [style.color]="currentPage===page ? '#fff' : '#374151'"
+                [style.boxShadow]="currentPage===page ? '0 3px 10px rgba(220,38,38,0.35)' : 'none'">
+                {{ page }}
+              </button>
+            }
+
+            <button (click)="goToPage(currentPage+1)" [disabled]="currentPage===totalPages"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">›</button>
+            <button (click)="goToPage(totalPages)" [disabled]="currentPage===totalPages"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">»</button>
+          </div>
+        }
       </section>
 
-      <!-- Promotional Banner -->
-      <section class="p-8 mt-12 text-center text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-xl">
-        <h3 class="mb-3 text-3xl font-bold">โปรโมชันพิเศษ!</h3>
-        <p class="mb-4 text-xl">ซื้อครบ 300 บาท รับส่วนลดทันที 10%</p>
-        <button class="px-8 py-3 font-bold text-red-600 transition transform bg-white rounded-lg hover:bg-gray-100 hover:scale-105">
-          ช้อปเลย!
-        </button>
+      <!-- ─── PROMO BANNER ─── -->
+      <section class="mx-6 mt-14">
+        <div class="relative p-10 overflow-hidden text-center text-white rounded-2xl"
+          style="background:linear-gradient(135deg,#991b1b 0%,#dc2626 40%,#ea580c 100%);">
+          <div class="absolute inset-0 opacity-10"
+            style="background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:22px 22px;"></div>
+          <div class="absolute w-48 h-48 rounded-full -right-10 -top-10 opacity-10"
+            style="background:radial-gradient(circle,#fff,transparent);"></div>
+          <div class="relative z-10">
+            <span class="inline-block px-4 py-1 mb-4 text-xs font-extrabold tracking-widest uppercase bg-white rounded-full"
+              style="color:#dc2626;">🔥 Limited Time</span>
+            <h3 class="mb-2 text-3xl font-extrabold tracking-tight">โปรโมชันพิเศษ!</h3>
+            <p class="mb-6 font-medium text-orange-100">
+              ซื้อครบ <span class="text-xl font-extrabold text-white">300 บาท</span> รับส่วนลดทันที 10%
+            </p>
+            <button class="inline-flex items-center gap-2 px-8 py-3 text-sm font-extrabold transition-all rounded-xl hover:scale-105 active:scale-95"
+              style="background:#fff;color:#dc2626;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+              </svg>
+              ช้อปเลย!
+            </button>
+          </div>
+        </div>
       </section>
 
     </main>
   </div>
 </div>
 
-<!-- ✅ Toast Notification -->
+<!-- ─── TOAST ─── -->
 @if (toastVisible) {
-  <div class="fixed z-50 flex items-center gap-2 px-5 py-3 text-white bg-green-600 shadow-lg bottom-6 right-6 rounded-xl animate-fade-in">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-    </svg>
+  <div class="fixed z-50 flex items-center gap-3 px-5 py-3.5 text-sm font-semibold text-white rounded-xl shadow-2xl bottom-6 right-6"
+    style="background:linear-gradient(135deg,#15803d,#16a34a);box-shadow:0 8px 24px rgba(21,128,61,0.4);">
+    <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 bg-white rounded-full">
+      <svg class="w-3.5 h-3.5" style="color:#15803d;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
     {{ toastMessage }}
   </div>
 }

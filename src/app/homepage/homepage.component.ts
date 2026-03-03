@@ -7,6 +7,7 @@ import { Product } from '../product/product.model';
 import { AuthService } from '../auth/auth.service';
 import { CartService } from '../cart/cart.service';
 import { getImageUrl } from '../product/product.model';
+
 interface CarouselSlide {
   id: number;
   image: string;
@@ -32,25 +33,13 @@ export class HomepageComponent implements OnInit, OnDestroy {
   toastVisible = false;
   private toastTimeout: any;
 
+  currentPage = 1;
+  itemsPerPage = 8;
+
   slides: CarouselSlide[] = [
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1596040033229-a0b55ee8b5c8?w=1200&h=400&fit=crop',
-      title: 'น้ำพริกแม่บ้าน',
-      subtitle: 'รสชาติต้นตำรับ ส่งตรงจากบ้าน'
-    },
-    {
-      id: 2,
-      image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=1200&h=400&fit=crop',
-      title: 'ลดราคาพิเศษ',
-      subtitle: 'ซื้อ 2 แถม 1 สำหรับทุกรายการ'
-    },
-    {
-      id: 3,
-      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=400&fit=crop',
-      title: 'ฟรีค่าส่ง',
-      subtitle: 'เมื่อซื้อครบ 300 บาท'
-    }
+    { id: 1, image: 'https://images.unsplash.com/photo-1596040033229-a0b55ee8b5c8?w=1200&h=400&fit=crop', title: 'น้ำพริกแม่บ้าน', subtitle: 'รสชาติต้นตำรับ ส่งตรงจากบ้าน' },
+    { id: 2, image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=1200&h=400&fit=crop', title: 'ลดราคาพิเศษ', subtitle: 'ซื้อ 2 แถม 1 สำหรับทุกรายการ' },
+    { id: 3, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=400&fit=crop', title: 'ฟรีค่าส่ง', subtitle: 'เมื่อซื้อครบ 300 บาท' }
   ];
 
   products: Product[] = [];
@@ -60,22 +49,14 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private router: Router,
     private productService: ProductService,
     private auth: AuthService,
-    private cartService: CartService  // ✅ inject CartService
+    private cartService: CartService
   ) {}
 
   ngOnInit() {
     this.startCarousel();
-
-    this.auth.getUser().subscribe((user: any) => {
-      this.isAdmin = user?.role === 'ADMIN';
-    });
-
+    this.auth.getUser().subscribe((user: any) => { this.isAdmin = user?.role === 'ADMIN'; });
     this.productService.getAllActive().subscribe({
-      next: (data: Product[]) => {
-        this.products = data;
-        this.filteredProducts = [...data];
-        this.isLoading = false;
-      },
+      next: (data: Product[]) => { this.products = data; this.filteredProducts = [...data]; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
   }
@@ -85,61 +66,60 @@ export class HomepageComponent implements OnInit, OnDestroy {
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
   }
 
-  startCarousel() {
-    this.carouselInterval = setInterval(() => this.nextSlide(), 5000);
-  }
-
-  stopCarousel() {
-    if (this.carouselInterval) clearInterval(this.carouselInterval);
-  }
-
+  startCarousel() { this.carouselInterval = setInterval(() => this.nextSlide(), 5000); }
+  stopCarousel() { if (this.carouselInterval) clearInterval(this.carouselInterval); }
   onCarouselMouseEnter() { this.stopCarousel(); }
   onCarouselMouseLeave() { this.startCarousel(); }
-
-  nextSlide() {
-    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-  }
-
-  prevSlide() {
-    this.currentSlide = this.currentSlide === 0
-      ? this.slides.length - 1
-      : this.currentSlide - 1;
-  }
-
-  goToSlide(index: number) {
-    this.currentSlide = index;
-  }
+  nextSlide() { this.currentSlide = (this.currentSlide + 1) % this.slides.length; }
+  prevSlide() { this.currentSlide = this.currentSlide === 0 ? this.slides.length - 1 : this.currentSlide - 1; }
+  goToSlide(index: number) { this.currentSlide = index; }
 
   searchProducts() {
     const keyword = this.searchText.trim().toLowerCase();
     this.filteredProducts = keyword
-      ? this.products.filter(p =>
-          p.name.toLowerCase().includes(keyword) ||
-          p.description.toLowerCase().includes(keyword))
+      ? this.products.filter(p => p.name.toLowerCase().includes(keyword) || p.description.toLowerCase().includes(keyword))
       : [...this.products];
+    this.currentPage = 1;
   }
 
-  // ✅ เรียก API จริง
+  get pagedProducts(): Product[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredProducts.slice(start, start + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.totalPages;
+    const cur = this.currentPage;
+    let start = Math.max(1, cur - 2);
+    let end = Math.min(total, start + 4);
+    if (end - start < 4) start = Math.max(1, end - 4);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   addToCart(product: Product) {
     this.cartService.addToCart(product.id).subscribe({
       next: () => this.showToast(`เพิ่ม "${product.name}" ลงตะกร้าแล้ว! 🛒`),
-      error: (err) => {
-        if (err.status === 401) {
-          this.showToast('กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้า');
-        } else {
-          this.showToast('เพิ่มสินค้าไม่สำเร็จ');
-        }
+      error: (err: any) => {
+        if (err.status === 401) this.showToast('กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้า');
+        else this.showToast('เพิ่มสินค้าไม่สำเร็จ');
       }
     });
   }
 
-  viewProductDetail(product: Product) {
-    this.router.navigate(['/product', product.id]);
-  }
-
-  goToProductManagement() {
-    this.router.navigate(['/products']);
-  }
+  viewProductDetail(product: Product) { this.router.navigate(['/product', product.id]); }
+  goToProductManagement() { this.router.navigate(['/products']); }
 
   showToast(message: string) {
     this.toastMessage = message;
