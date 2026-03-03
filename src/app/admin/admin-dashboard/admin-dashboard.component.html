@@ -1,0 +1,131 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+    <p class="mt-1 text-gray-500">ภาพรวมระบบทั้งหมด</p>
+  </div>
+
+  <!-- Stats Cards -->
+  @if (isLoading) {
+    <div class="flex justify-center py-16">
+      <div class="w-10 h-10 border-4 border-red-500 rounded-full border-t-transparent animate-spin"></div>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+
+      <!-- Total Products -->
+      <div class="p-6 bg-white border-l-4 border-blue-500 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">สินค้าทั้งหมด</p>
+            <p class="mt-1 text-3xl font-bold text-blue-600">{{ totalProducts }}</p>
+          </div>
+          <div class="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-xl">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+          </div>
+        </div>
+        <a routerLink="/admin/products" class="block mt-3 text-xs text-blue-500 hover:underline">ดูทั้งหมด →</a>
+      </div>
+
+      <!-- Total Users -->
+      <div class="p-6 bg-white border-l-4 border-green-500 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">ผู้ใช้ทั้งหมด</p>
+            <p class="mt-1 text-3xl font-bold text-green-600">{{ totalUsers }}</p>
+          </div>
+          <div class="flex items-center justify-center w-12 h-12 bg-green-100 rounded-xl">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+          </div>
+        </div>
+        <a routerLink="/admin/users" class="block mt-3 text-xs text-green-500 hover:underline">จัดการ User →</a>
+      </div>
+
+      <!-- Low Stock -->
+      <div class="p-6 bg-white border-l-4 border-red-500 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">สินค้าใกล้หมด</p>
+            <p class="mt-1 text-3xl font-bold text-red-600">{{ lowStockCount }}</p>
+          </div>
+          <div class="flex items-center justify-center w-12 h-12 bg-red-100 rounded-xl">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="mt-3 text-xs text-gray-400">stock น้อยกว่า 50 ชิ้น</p>
+      </div>
+
+      <!-- Total Value -->
+      <div class="p-6 bg-white border-l-4 border-yellow-500 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">มูลค่าคงคลัง</p>
+            <p class="mt-1 text-2xl font-bold text-yellow-600">฿{{ totalValue.toLocaleString() }}</p>
+          </div>
+          <div class="flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-xl">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <a routerLink="/admin/reports" class="block mt-3 text-xs text-yellow-500 hover:underline">ดูรายงาน →</a>
+      </div>
+
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <a routerLink="/admin/products"
+        class="flex items-center gap-4 p-6 transition bg-white shadow-sm rounded-xl hover:shadow-md group">
+        <div class="flex items-center justify-center w-12 h-12 transition bg-blue-100 group-hover:bg-blue-200 rounded-xl">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-semibold text-gray-800">เพิ่มสินค้าใหม่</p>
+          <p class="text-sm text-gray-500">ไปหน้าจัดการสินค้า</p>
+        </div>
+      </a>
+
+      <a routerLink="/admin/users"
+        class="flex items-center gap-4 p-6 transition bg-white shadow-sm rounded-xl hover:shadow-md group">
+        <div class="flex items-center justify-center w-12 h-12 transition bg-green-100 group-hover:bg-green-200 rounded-xl">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-semibold text-gray-800">จัดการ User</p>
+          <p class="text-sm text-gray-500">ดู/แก้ไขผู้ใช้งาน</p>
+        </div>
+      </a>
+
+      <a routerLink="/admin/reports"
+        class="flex items-center gap-4 p-6 transition bg-white shadow-sm rounded-xl hover:shadow-md group">
+        <div class="flex items-center justify-center w-12 h-12 transition bg-yellow-100 group-hover:bg-yellow-200 rounded-xl">
+          <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-semibold text-gray-800">ดูรายงาน</p>
+          <p class="text-sm text-gray-500">Export PDF / Excel</p>
+        </div>
+      </a>
+    </div>
+  }
+</div>
