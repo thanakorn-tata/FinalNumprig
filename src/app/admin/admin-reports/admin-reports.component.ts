@@ -18,6 +18,10 @@ export class AdminReportsComponent implements OnInit {
   selectedStatus = '';
   isLoading = true;
 
+  // ✅ Date filter
+  dateFrom = '';
+  dateTo = '';
+
   selectedOrder: any = null;
   showSlipModal = false;
   slipUrl = '';
@@ -41,32 +45,95 @@ export class AdminReportsComponent implements OnInit {
 
   loadOrders() {
     this.isLoading = true;
-    const params = this.selectedStatus ? `?status=${this.selectedStatus}` : '';
-    this.http.get<any[]>(`${this.API}/admin${params}`, { withCredentials: true }).subscribe({
+    this.http.get<any[]>(`${this.API}/admin`, { withCredentials: true }).subscribe({
       next: (data) => {
         this.orders = data;
-        this.filteredOrders = data;
+        this.applyFilter();
         this.isLoading = false;
       },
       error: () => this.isLoading = false
     });
   }
 
-  filterByStatus() { this.loadOrders(); }
+  applyFilter() {
+    let result = [...this.orders];
 
-  // ✅ เปิด modal ดูสลิป
+    if (this.selectedStatus) {
+      result = result.filter(o => o.status === this.selectedStatus);
+    }
+    if (this.dateFrom) {
+      const from = new Date(this.dateFrom); from.setHours(0,0,0,0);
+      result = result.filter(o => new Date(o.createdAt) >= from);
+    }
+    if (this.dateTo) {
+      const to = new Date(this.dateTo); to.setHours(23,59,59,999);
+      result = result.filter(o => new Date(o.createdAt) <= to);
+    }
+
+    this.filteredOrders = result;
+  }
+
+  filterByStatus() { this.applyFilter(); }
+  clearDateFilter() { this.dateFrom = ''; this.dateTo = ''; this.applyFilter(); }
+
+  // ✅ สำหรับ print — เฉพาะ CONFIRMED ในช่วงวันที่
+  get printOrders(): any[] {
+    return this.filteredOrders.filter(o => o.status === 'CONFIRMED');
+  }
+
+  get printTotalRevenue(): number {
+    return this.printOrders.reduce((s, o) => s + o.totalAmount, 0);
+  }
+
+  get todayStr(): string {
+    return new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  get dateRangeStr(): string {
+    if (!this.dateFrom && !this.dateTo) return 'ทั้งหมด';
+    const from = this.dateFrom ? new Date(this.dateFrom).toLocaleDateString('th-TH') : '';
+    const to = this.dateTo ? new Date(this.dateTo).toLocaleDateString('th-TH') : '';
+    if (from && to) return `${from} — ${to}`;
+    if (from) return `ตั้งแต่ ${from}`;
+    return `ถึง ${to}`;
+  }
+
+  formatOrderId(id: number): string {
+    return String(id).padStart(5, '0');
+  }
+
+  printReport() {
+  const printContent = document.querySelector('.print-area')?.innerHTML;
+  if (!printContent) return;
+
+  const win = window.open('', '_blank', 'width=800,height=600');
+  win?.document.write(`
+    <html><head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: Arial, sans-serif; padding: 40px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { border-top: 2px solid #333; border-bottom: 1px solid #333; padding: 8px 10px; }
+        td { border-bottom: 1px solid #ccc; padding: 6px 10px; vertical-align: top; }
+        tfoot td { border-top: 2px solid #333; border-bottom: 2px solid #333; font-weight: bold; }
+        .text-center { text-align: center; } .text-right { text-align: right; }
+        @page { margin: 10mm; size: A4; }
+      </style>
+    </head><body>${printContent}</body></html>
+  `);
+  win?.document.close();
+  win?.focus();
+  setTimeout(() => { win?.print(); win?.close(); }, 500);
+}
+
   viewSlip(order: any) {
     this.selectedOrder = order;
     this.slipUrl = `${this.API}/${order.id}/slip`;
     this.showSlipModal = true;
   }
 
-  closeSlipModal() {
-    this.showSlipModal = false;
-    this.selectedOrder = null;
-  }
+  closeSlipModal() { this.showSlipModal = false; this.selectedOrder = null; }
 
-  // ✅ ยืนยัน Order
   confirmOrder(order: any) {
     this.isConfirming = true;
     this.http.patch(`${this.API}/${order.id}/confirm`, {}, { withCredentials: true }).subscribe({
@@ -77,30 +144,17 @@ export class AdminReportsComponent implements OnInit {
         this.closeSlipModal();
         this.loadOrders();
       },
-      error: () => {
-        this.showToast('ยืนยันไม่สำเร็จ', 'error');
-        this.isConfirming = false;
-      }
+      error: () => { this.showToast('ยืนยันไม่สำเร็จ', 'error'); this.isConfirming = false; }
     });
   }
 
   getStatusText(status: string): string {
-    const map: any = {
-      'PENDING_PAYMENT': 'รอชำระ',
-      'SLIP_UPLOADED': 'รอตรวจสลิป',
-      'CONFIRMED': 'ยืนยันแล้ว',
-      'CANCELLED': 'ยกเลิก'
-    };
+    const map: any = { 'PENDING_PAYMENT': 'รอชำระ', 'SLIP_UPLOADED': 'รอตรวจสลิป', 'CONFIRMED': 'ยืนยันแล้ว', 'CANCELLED': 'ยกเลิก' };
     return map[status] || status;
   }
 
   getStatusClass(status: string): string {
-    const map: any = {
-      'PENDING_PAYMENT': 'bg-yellow-100 text-yellow-700',
-      'SLIP_UPLOADED': 'bg-blue-100 text-blue-700',
-      'CONFIRMED': 'bg-green-100 text-green-700',
-      'CANCELLED': 'bg-red-100 text-red-700'
-    };
+    const map: any = { 'PENDING_PAYMENT': 'bg-yellow-100 text-yellow-700', 'SLIP_UPLOADED': 'bg-blue-100 text-blue-700', 'CONFIRMED': 'bg-green-100 text-green-700', 'CANCELLED': 'bg-red-100 text-red-700' };
     return map[status] || 'bg-gray-100 text-gray-700';
   }
 
@@ -108,9 +162,7 @@ export class AdminReportsComponent implements OnInit {
   get totalRevenue() { return this.orders.filter(o => o.status === 'CONFIRMED').reduce((s, o) => s + o.totalAmount, 0); }
 
   showToast(message: string, type: 'success' | 'error' = 'success') {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.toastVisible = true;
+    this.toastMessage = message; this.toastType = type; this.toastVisible = true;
     setTimeout(() => this.toastVisible = false, 3000);
   }
 }

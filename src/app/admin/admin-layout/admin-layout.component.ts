@@ -15,32 +15,13 @@ export class AdminLayoutComponent implements OnInit {
   isSidebarCollapsed = false;
 
   menuItems = [
-    {
-      label: 'Dashboard',
-      icon: 'dashboard',
-      route: '/admin/dashboard'
-    },
-    {
-      label: 'จัดการสินค้า',
-      icon: 'products',
-      route: '/admin/products'
-    },
-    {
-      label: 'จัดการ User',
-      icon: 'users',
-      route: '/admin/users'
-    },
-    {
-      label: 'รายงาน / Report',
-      icon: 'report',
-      route: '/admin/reports'
-    }
+    { label: 'Dashboard',        icon: 'dashboard', route: '/admin/dashboard' },
+    { label: 'จัดการ User',      icon: 'users',     route: '/admin/users'     }, // ✅ ย้ายขึ้นมา
+    { label: 'จัดการสินค้า',    icon: 'products',  route: '/admin/products'  },
+    { label: 'รายงาน / Report', icon: 'report',    route: '/admin/reports'   }
   ];
 
-  constructor(
-    private auth: AuthService,
-    private router: Router
-  ) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   ngOnInit() {
     this.auth.getUser().subscribe((user: any) => {
@@ -48,9 +29,7 @@ export class AdminLayoutComponent implements OnInit {
     });
   }
 
-  toggleSidebar() {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed;
-  }
+  toggleSidebar() { this.isSidebarCollapsed = !this.isSidebarCollapsed; }
 
   logout() {
     this.auth.logout().subscribe({
@@ -59,7 +38,5 @@ export class AdminLayoutComponent implements OnInit {
     });
   }
 
-  goToShop() {
-    this.router.navigate(['/']);
-  }
+  goToShop() { this.router.navigate(['/']); }
 }

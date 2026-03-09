@@ -16,7 +16,8 @@ export class LayoutComponent implements OnInit {
   username = '';
   role = '';
   cartCount = 0;
-  isCartOpen = false;   // ✅ ควบคุม drawer
+  isCartOpen = false;
+  isLoggedIn = false;
 
   constructor(
     private auth: AuthService,
@@ -26,21 +27,27 @@ export class LayoutComponent implements OnInit {
 
   ngOnInit() {
     this.auth.getUser().subscribe((user: any) => {
+      this.isLoggedIn = !!user;
       this.username = user?.username ?? '';
       this.role = user?.role ?? '';
     });
 
-    // ✅ ดึงจำนวนสินค้าในตะกร้าแบบ realtime
     this.cartService.getCartCount().subscribe(count => {
       this.cartCount = count;
     });
   }
 
-  get isAdmin(): boolean {
-    return this.role === 'ADMIN';
+  get isAdmin(): boolean { return this.role === 'ADMIN'; }
+
+  // ✅ กด cart icon — ถ้า guest ให้ไป login
+  openCart() {
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
+      return;
+    }
+    this.isCartOpen = true;
   }
 
-  openCart()  { this.isCartOpen = true; }
   closeCart() { this.isCartOpen = false; }
 
   logout() {

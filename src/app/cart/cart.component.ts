@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { CartService } from './cart.service';
 import { CartItem, CartResponse } from './cart.model';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-cart',
@@ -18,26 +19,40 @@ export class CartComponent implements OnInit {
   total = 0;
   isLoading = true;
 
+  // ✅ pending order ที่ยังไม่ได้ชำระ
+  pendingOrderId: number | null = null;
+
   constructor(
     private cartService: CartService,
     private router: Router,
+    private http: HttpClient
   ) {}
 
-  ngOnInit() {
-    this.loadCart();
-  }
+  ngOnInit() { this.loadCart(); }
 
-  ngOnChanges() {
-    if (this.isOpen) this.loadCart();
-  }
+  ngOnChanges() { if (this.isOpen) this.loadCart(); }
 
   loadCart() {
     this.isLoading = true;
+    this.pendingOrderId = null;
+
+    // โหลด cart และเช็ค pending order พร้อมกัน
     this.cartService.getCart().subscribe({
       next: (res: CartResponse) => {
         this.items = res.items;
         this.total = res.total;
         this.isLoading = false;
+
+        // ✅ ถ้าตะกร้าว่าง ให้เช็คว่ามี pending order ค้างไหม
+        if (this.items.length === 0) {
+          this.http.get<any[]>('http://localhost:8080/api/orders/my', { withCredentials: true }).subscribe({
+            next: (orders) => {
+              const pending = orders.find(o => o.status === 'PENDING_PAYMENT');
+              this.pendingOrderId = pending?.id ?? null;
+            },
+            error: () => {}
+          });
+        }
       },
       error: () => (this.isLoading = false),
     });
@@ -78,8 +93,13 @@ export class CartComponent implements OnInit {
     });
   }
 
-  // ✅ ไปหน้า checkout
   goToCheckout() {
+    this.close();
+    this.router.navigate(['/checkout']);
+  }
+
+  // ✅ กลับไปชำระ pending order
+  continuePendingOrder() {
     this.close();
     this.router.navigate(['/checkout']);
   }
@@ -88,7 +108,5 @@ export class CartComponent implements OnInit {
     this.total = this.items.reduce((sum, i) => sum + i.subtotal, 0);
   }
 
-  close() {
-    this.closeCart.emit();
-  }
+  close() { this.closeCart.emit(); }
 }

@@ -17,8 +17,6 @@ import generatePayload from "promptpay-qr";
 export class CheckoutComponent implements OnInit {
 
   private API = "http://localhost:8080/api/orders";
-
-  // แก้เป็นเบอร์ PromptPay จริงของร้าน
   private PROMPTPAY_ID = "0937460033";
 
   step = 1;
@@ -34,7 +32,6 @@ export class CheckoutComponent implements OnInit {
   isUploadingSlip = false;
   isCreatingOrder = false;
 
-  // QR dynamic
   qrCodeUrl = "";
   isGeneratingQR = false;
 
@@ -45,12 +42,16 @@ export class CheckoutComponent implements OnInit {
   constructor(private http: HttpClient, private cartService: CartService, private router: Router) {}
 
   ngOnInit() {
+    // ✅ โหลด cart ปกติ ไม่เช็ค pending order ตรงนี้อีกต่อไป
+    // pending order จะแสดงใน cart drawer แทน
     this.cartService.getCart().subscribe({
       next: (res: CartResponse) => {
         this.cartItems = res.items;
         this.total = res.total;
         this.isLoading = false;
-        if (this.cartItems.length === 0) this.router.navigate(["/"]);
+        if (this.cartItems.length === 0) {
+          this.router.navigate(["/"]);
+        }
       },
       error: () => this.isLoading = false
     });
@@ -61,8 +62,7 @@ export class CheckoutComponent implements OnInit {
     try {
       const payload = generatePayload(this.PROMPTPAY_ID, { amount });
       this.qrCodeUrl = await QRCode.toDataURL(payload, {
-        width: 250,
-        margin: 2,
+        width: 250, margin: 2,
         color: { dark: "#000000", light: "#ffffff" }
       });
     } catch (err) {
@@ -80,7 +80,8 @@ export class CheckoutComponent implements OnInit {
     this.http.post<any>(this.API, this.shippingForm, { withCredentials: true }).subscribe({
       next: (order) => {
         this.orderId = order.id;
-        this.generateQR(this.total); // QR ตามยอดจริง
+        this.generateQR(this.total);
+        this.cartService.refreshCount(); // ✅ เคลียร์ badge ทันทีหลังสร้าง order
         this.step = 2;
         this.isCreatingOrder = false;
       },
@@ -107,14 +108,18 @@ export class CheckoutComponent implements OnInit {
     this.isUploadingSlip = true;
     const form = new FormData();
     form.append("slip", this.selectedSlip);
-    this.http.post(this.API + "/" + this.orderId + "/slip", form, { withCredentials: true }).subscribe({
-      next: () => { this.step = 3; this.isUploadingSlip = false; this.cartService.refreshCount(); },
+    this.http.post(`${this.API}/${this.orderId}/slip`, form, { withCredentials: true }).subscribe({
+      next: () => {
+        this.step = 3;
+        this.isUploadingSlip = false;
+        this.cartService.refreshCount(); // ✅ เคลียร์ badge หลัง upload slip ด้วย
+      },
       error: () => { this.showToast("อัปโหลดสลิปไม่สำเร็จ", "error"); this.isUploadingSlip = false; }
     });
   }
 
   goToReceipt() { this.router.navigate(["/receipt", this.orderId]); }
-  goHome() { this.router.navigate(["//"]); }
+  goHome() { this.router.navigate(["/"]); }
 
   showToast(message: string, type: "success" | "error" = "success") {
     this.toastMessage = message; this.toastType = type; this.toastVisible = true;

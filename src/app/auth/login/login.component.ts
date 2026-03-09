@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';  // เพิ่ม RouterLink ตรงนี้
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,26 +8,30 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   selector: 'app-login',
   templateUrl: './login.component.html',
-  imports: [CommonModule, FormsModule, RouterLink]  // เพิ่ม RouterLink ใน imports
+  imports: [CommonModule, FormsModule, RouterLink]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
-  form = {
-    username: '',
-    password: ''
-  };
-
+  form = { username: '', password: '' };
   error = '';
+  private returnUrl = '/';
 
   constructor(
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute   // ✅ รับ returnUrl
   ) {}
+
+  ngOnInit() {
+    // ✅ ดึง returnUrl จาก query param เช่น /login?returnUrl=/checkout
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+  }
 
   submit() {
     this.auth.login(this.form).subscribe({
       next: () => {
-        this.router.navigate(['/']);
+        // ✅ redirect กลับหน้าเดิมที่พยายามเข้า
+        this.router.navigateByUrl(this.returnUrl);
       },
       error: (err) => {
         this.error = err.error || 'เข้าสู่ระบบไม่สำเร็จ';

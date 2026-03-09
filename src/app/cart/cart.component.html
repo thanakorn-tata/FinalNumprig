@@ -1,162 +1,95 @@
 <!-- Backdrop -->
 @if (isOpen) {
-  <div
-    class="fixed inset-0 z-40 transition-opacity bg-black bg-opacity-40"
-    (click)="close()"
-  ></div>
+  <div class="fixed inset-0 z-40 transition-opacity bg-black bg-opacity-40" (click)="close()"></div>
 }
 
 <!-- Drawer -->
 <div
-  [ngClass]="{
-    'translate-x-0': isOpen,
-    'translate-x-full': !isOpen,
-  }"
+  [ngClass]="{ 'translate-x-0': isOpen, 'translate-x-full': !isOpen }"
   class="fixed top-0 right-0 z-50 flex flex-col w-full h-full max-w-md transition-transform duration-300 ease-in-out bg-white shadow-2xl"
 >
   <!-- Header -->
-  <div
-    class="flex items-center justify-between px-6 py-4 text-white bg-gradient-to-r from-red-500 to-orange-500"
-  >
+  <div class="flex items-center justify-between px-6 py-4 text-white bg-gradient-to-r from-red-500 to-orange-500">
     <div class="flex items-center gap-2">
-      <svg
-        class="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-        ></path>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
       </svg>
       <h2 class="text-xl font-bold">ตะกร้าสินค้า</h2>
       @if (items.length > 0) {
-        <span
-          class="bg-white text-red-500 text-xs font-bold px-2 py-0.5 rounded-full"
-        >
-          {{ items.length }}
-        </span>
+        <span class="bg-white text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">{{ items.length }}</span>
       }
     </div>
-    <button
-      (click)="close()"
-      class="p-1 transition rounded-lg hover:bg-white/20"
-    >
-      <svg
-        class="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M6 18L18 6M6 6l12 12"
-        ></path>
+    <button (click)="close()" class="p-1 transition rounded-lg hover:bg-white/20">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
       </svg>
     </button>
   </div>
 
   <!-- Content -->
   <div class="flex-1 px-4 py-4 overflow-y-auto">
-    <!-- Loading -->
+
     @if (isLoading) {
       <div class="flex justify-center py-16">
-        <div
-          class="w-10 h-10 border-4 border-red-500 rounded-full border-t-transparent animate-spin"
-        ></div>
+        <div class="w-10 h-10 border-4 border-red-500 rounded-full border-t-transparent animate-spin"></div>
       </div>
     }
 
-    <!-- Empty -->
-    @if (!isLoading && items.length === 0) {
-      <div
-        class="flex flex-col items-center justify-center py-16 text-gray-400"
-      >
-        <svg
-          class="w-20 h-20 mb-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-          ></path>
+    <!-- ✅ ตะกร้าว่าง + มี pending order -->
+    @if (!isLoading && items.length === 0 && pendingOrderId) {
+      <div class="flex flex-col items-center justify-center px-4 py-12 text-center">
+        <div class="flex items-center justify-center w-16 h-16 mb-4 bg-yellow-100 rounded-full">
+          <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="text-lg font-bold text-gray-800">มีคำสั่งซื้อค้างอยู่</p>
+        <p class="mt-1 mb-4 text-sm text-gray-500">Order #{{ pendingOrderId }} รอการชำระเงิน</p>
+        <button (click)="continuePendingOrder()"
+          class="w-full py-3 font-bold text-white transition bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl hover:from-yellow-600 hover:to-orange-600">
+          ดำเนินการชำระเงินต่อ →
+        </button>
+      </div>
+    }
+
+    <!-- ตะกร้าว่าง ไม่มี pending order -->
+    @if (!isLoading && items.length === 0 && !pendingOrderId) {
+      <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+        <svg class="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
         </svg>
         <p class="text-lg font-medium">ตะกร้าว่างเปล่า</p>
         <p class="mt-1 text-sm">เพิ่มสินค้าที่ต้องการได้เลย</p>
       </div>
     }
 
-    <!-- Items -->
+    <!-- รายการสินค้าในตะกร้า -->
     @for (item of items; track item.cartId) {
-      <div
-        class="flex gap-3 p-3 mb-3 border border-gray-100 bg-gray-50 rounded-xl"
-      >
-        <!-- รูปสินค้า -->
-        <img
-          [src]="item.imageUrl"
-          [alt]="item.productName"
+      <div class="flex gap-3 p-3 mb-3 border border-gray-100 bg-gray-50 rounded-xl">
+        <img [src]="item.imageUrl" [alt]="item.productName"
           class="flex-shrink-0 object-cover w-20 h-20 rounded-lg"
-          onerror="this.src = 'https://via.placeholder.com/80x80?text=No+Image'"
-        />
-
-        <!-- รายละเอียด -->
+          onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
         <div class="flex-1 min-w-0">
-          <p class="font-semibold text-gray-800 truncate">
-            {{ item.productName }}
-          </p>
+          <p class="font-semibold text-gray-800 truncate">{{ item.productName }}</p>
           <p class="mt-1 font-bold text-red-500">฿{{ item.productPrice }}</p>
-
-          <!-- ปุ่มเพิ่ม/ลด -->
           <div class="flex items-center justify-between mt-2">
             <div class="flex items-center gap-2">
-              <button
-                (click)="decrease(item)"
-                class="flex items-center justify-center font-bold text-gray-700 transition bg-gray-200 rounded-full w-7 h-7 hover:bg-gray-300"
-              >
-                −
-              </button>
-              <span class="w-8 font-semibold text-center text-gray-800">{{
-                item.quantity
-              }}</span>
-              <button
-                (click)="increase(item)"
-                class="flex items-center justify-center font-bold text-white transition bg-red-500 rounded-full w-7 h-7 hover:bg-red-600"
-              >
-                +
-              </button>
+              <button (click)="decrease(item)"
+                class="flex items-center justify-center font-bold text-gray-700 transition bg-gray-200 rounded-full w-7 h-7 hover:bg-gray-300">−</button>
+              <span class="w-8 font-semibold text-center text-gray-800">{{ item.quantity }}</span>
+              <button (click)="increase(item)"
+                class="flex items-center justify-center font-bold text-white transition bg-red-500 rounded-full w-7 h-7 hover:bg-red-600">+</button>
             </div>
-
-            <!-- ราคารวมต่อรายการ -->
             <p class="font-bold text-gray-800">฿{{ item.subtotal }}</p>
           </div>
         </div>
-
-        <!-- ปุ่มลบ -->
-        <button
-          (click)="remove(item)"
-          class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition self-start flex-shrink-0"
-        >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
+        <button (click)="remove(item)"
+          class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition self-start flex-shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
@@ -166,24 +99,16 @@
   <!-- Footer -->
   @if (!isLoading && items.length > 0) {
     <div class="px-6 py-4 space-y-3 bg-white border-t">
-      <!-- ยอดรวม -->
       <div class="flex items-center justify-between text-lg font-bold">
         <span class="text-gray-700">ยอดรวมทั้งหมด</span>
         <span class="text-xl text-red-600">฿{{ total }}</span>
       </div>
-
-      <!-- ปุ่ม -->
-      <button
-        (click)="goToCheckout()"
-        class="w-full py-3 font-bold text-white transition shadow-md bg-gradient-to-r from-red-500 to-red-600 rounded-xl hover:from-red-600 hover:to-red-700"
-      >
+      <button (click)="goToCheckout()"
+        class="w-full py-3 font-bold text-white transition shadow-md bg-gradient-to-r from-red-500 to-red-600 rounded-xl hover:from-red-600 hover:to-red-700">
         สั่งซื้อสินค้า
       </button>
-
-      <button
-        (click)="clearAll()"
-        class="w-full py-2 text-sm text-gray-600 transition border border-gray-300 rounded-xl hover:bg-gray-50"
-      >
+      <button (click)="clearAll()"
+        class="w-full py-2 text-sm text-gray-600 transition border border-gray-300 rounded-xl hover:bg-gray-50">
         ล้างตะกร้า
       </button>
     </div>

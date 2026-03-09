@@ -36,8 +36,13 @@ export class HomepageComponent implements OnInit, OnDestroy {
   currentPage = 1;
   itemsPerPage = 8;
 
+  // ✅ Product modal
+  selectedProduct: Product | null = null;
+  isAddingToCart = false;
+  modalQty = 1;
+
   slides: CarouselSlide[] = [
-    { id: 1, image: 'https://images.unsplash.com/photo-1596040033229-a0b55ee8b5c8?w=1200&h=400&fit=crop', title: 'น้ำพริกแม่บ้าน', subtitle: 'รสชาติต้นตำรับ ส่งตรงจากบ้าน' },
+    { id: 1, image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=1200&h=400&fit=crop', title: 'น้ำพริกแม่บ้าน', subtitle: 'รสชาติต้นตำรับ ส่งตรงจากบ้าน' },
     { id: 2, image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=1200&h=400&fit=crop', title: 'ลดราคาพิเศษ', subtitle: 'ซื้อ 2 แถม 1 สำหรับทุกรายการ' },
     { id: 3, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=400&fit=crop', title: 'ฟรีค่าส่ง', subtitle: 'เมื่อซื้อครบ 300 บาท' }
   ];
@@ -108,18 +113,54 @@ export class HomepageComponent implements OnInit, OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  addToCart(product: Product) {
-    this.cartService.addToCart(product.id).subscribe({
-      next: () => this.showToast(`เพิ่ม "${product.name}" ลงตะกร้าแล้ว! 🛒`),
-      error: (err: any) => {
-        if (err.status === 401) this.showToast('กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้า');
-        else this.showToast('เพิ่มสินค้าไม่สำเร็จ');
-      }
+  openProductModal(product: Product) {
+    this.selectedProduct = product;
+    this.isAddingToCart = false;
+    this.modalQty = 1;
+  }
+
+  closeProductModal() { this.selectedProduct = null; this.modalQty = 1; }
+
+  increaseQty() {
+    if (this.selectedProduct && this.modalQty < this.selectedProduct.stock) this.modalQty++;
+  }
+
+  decreaseQty() { if (this.modalQty > 1) this.modalQty--; }
+
+  addToCart(product: Product, closeModal = false) {
+    this.isAddingToCart = true;
+    // เรียก addToCart หลายครั้งตามจำนวน
+    const calls = Array.from({ length: this.modalQty }, () =>
+      this.cartService.addToCart(product.id).toPromise()
+    );
+    Promise.all(calls).then(() => {
+      this.showToast(`เพิ่ม "${product.name}" x${this.modalQty} ลงตะกร้าแล้ว! 🛒`);
+      this.isAddingToCart = false;
+      if (closeModal) this.closeProductModal();
+    }).catch((err: any) => {
+      if (err?.status === 401) this.showToast('กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้า');
+      else this.showToast('เพิ่มสินค้าไม่สำเร็จ');
+      this.isAddingToCart = false;
+    });
+  }
+
+  buyNow(product: Product) {
+    this.isAddingToCart = true;
+    const calls = Array.from({ length: this.modalQty }, () =>
+      this.cartService.addToCart(product.id).toPromise()
+    );
+    Promise.all(calls).then(() => {
+      this.isAddingToCart = false;
+      this.closeProductModal();
+      this.router.navigate(['/checkout']);
+    }).catch((err: any) => {
+      if (err?.status === 401) this.showToast('กรุณาเข้าสู่ระบบก่อนสั่งซื้อ');
+      else this.showToast('เกิดข้อผิดพลาด');
+      this.isAddingToCart = false;
     });
   }
 
   viewProductDetail(product: Product) { this.router.navigate(['/product', product.id]); }
-  goToProductManagement() { this.router.navigate(['/products']); }
 
   showToast(message: string) {
     this.toastMessage = message;
