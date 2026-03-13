@@ -12,26 +12,28 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent)
   },
 
-  // ===== User Routes =====
+  // ===== User Routes — ไม่มี AuthGuard ที่ layout แล้ว (guest เข้าได้) =====
   {
     path: '',
     loadComponent: () => import('./layout/layout.component').then(m => m.LayoutComponent),
-    canActivate: [AuthGuard],
     children: [
       {
-        path: '',
+        path: '',  // ✅ guest เข้าได้
         loadComponent: () => import('./homepage/homepage.component').then(m => m.HomepageComponent)
       },
       {
         path: 'profile',
+        canActivate: [AuthGuard],  // ✅ ต้อง login
         loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent)
       },
       {
-        path: 'checkout',    // ✅ หน้าชำระเงิน
+        path: 'checkout',
+        canActivate: [AuthGuard],  // ✅ ต้อง login
         loadComponent: () => import('./checkout/checkout.component').then(m => m.CheckoutComponent)
       },
       {
-        path: 'receipt/:id', // ✅ ใบเสร็จ
+        path: 'receipt/:id',
+        canActivate: [AuthGuard],  // ✅ ต้อง login
         loadComponent: () => import('./receipt/receipt.component').then(m => m.ReceiptComponent)
       }
     ]
@@ -62,6 +64,10 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+  path: 'about',
+  loadComponent: () => import('./about/about/about.component').then(m => m.AboutComponent)
+},
 
   { path: '**', redirectTo: '' }
 ];

@@ -1,19 +1,21 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthService } from './auth.service';
 import { map, take, filter } from 'rxjs/operators';
 
-export const AuthGuard: CanActivateFn = () => {
+// ✅ Guard สำหรับหน้าที่ต้อง login (checkout, profile, receipt)
+export const AuthGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
   return auth.getUser().pipe(
-    // ✅ รอจนกว่า user จะถูก load แล้ว (ไม่ใช่ undefined)
     filter(user => user !== undefined),
     take(1),
     map(user => {
       if (user) return true;
-      router.navigate(['/login']);
+      // เก็บ path เต็มสำหรับ redirect กลับหลัง login
+      const returnUrl = '/' + route.url.map(s => s.path).join('/');
+      router.navigate(['/login'], { queryParams: { returnUrl } });
       return false;
     })
   );

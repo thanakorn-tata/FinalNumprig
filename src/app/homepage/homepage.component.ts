@@ -9,10 +9,7 @@ import { CartService } from '../cart/cart.service';
 import { getImageUrl } from '../product/product.model';
 
 interface CarouselSlide {
-  id: number;
-  image: string;
-  title: string;
-  subtitle: string;
+  id: number; image: string; title: string; subtitle: string;
 }
 
 @Component({
@@ -36,7 +33,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
   currentPage = 1;
   itemsPerPage = 8;
 
-  // ✅ Product modal
   selectedProduct: Product | null = null;
   isAddingToCart = false;
   modalQty = 1;
@@ -92,9 +88,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
     return this.filteredProducts.slice(start, start + this.itemsPerPage);
   }
 
-  get totalPages(): number {
-    return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
-  }
+  get totalPages(): number { return Math.ceil(this.filteredProducts.length / this.itemsPerPage); }
 
   get pageNumbers(): number[] {
     const pages: number[] = [];
@@ -120,16 +114,14 @@ export class HomepageComponent implements OnInit, OnDestroy {
   }
 
   closeProductModal() { this.selectedProduct = null; this.modalQty = 1; }
-
-  increaseQty() {
-    if (this.selectedProduct && this.modalQty < this.selectedProduct.stock) this.modalQty++;
-  }
-
+  increaseQty() { if (this.selectedProduct && this.modalQty < this.selectedProduct.stock) this.modalQty++; }
   decreaseQty() { if (this.modalQty > 1) this.modalQty--; }
 
   addToCart(product: Product, closeModal = false) {
+    // ✅ guest → redirect ไป login ทันที ไม่ทำอะไรต่อ
+    if (!this.auth.requireLogin('/')) return;
+
     this.isAddingToCart = true;
-    // เรียก addToCart หลายครั้งตามจำนวน
     const calls = Array.from({ length: this.modalQty }, () =>
       this.cartService.addToCart(product.id).toPromise()
     );
@@ -137,14 +129,16 @@ export class HomepageComponent implements OnInit, OnDestroy {
       this.showToast(`เพิ่ม "${product.name}" x${this.modalQty} ลงตะกร้าแล้ว! 🛒`);
       this.isAddingToCart = false;
       if (closeModal) this.closeProductModal();
-    }).catch((err: any) => {
-      if (err?.status === 401) this.showToast('กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้า');
-      else this.showToast('เพิ่มสินค้าไม่สำเร็จ');
+    }).catch(() => {
+      this.showToast('เพิ่มสินค้าไม่สำเร็จ');
       this.isAddingToCart = false;
     });
   }
 
   buyNow(product: Product) {
+    // ✅ guest → redirect ไป login ทันที ไม่ทำอะไรต่อ
+    if (!this.auth.requireLogin('/')) return;
+
     this.isAddingToCart = true;
     const calls = Array.from({ length: this.modalQty }, () =>
       this.cartService.addToCart(product.id).toPromise()
@@ -153,9 +147,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
       this.isAddingToCart = false;
       this.closeProductModal();
       this.router.navigate(['/checkout']);
-    }).catch((err: any) => {
-      if (err?.status === 401) this.showToast('กรุณาเข้าสู่ระบบก่อนสั่งซื้อ');
-      else this.showToast('เกิดข้อผิดพลาด');
+    }).catch(() => {
+      this.showToast('เกิดข้อผิดพลาด');
       this.isAddingToCart = false;
     });
   }
