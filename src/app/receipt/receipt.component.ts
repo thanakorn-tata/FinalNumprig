@@ -7,43 +7,49 @@ import { HttpClient } from '@angular/common/http';
   selector: 'app-receipt',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './receipt.component.html'
+  templateUrl: './receipt.component.html',
 })
 export class ReceiptComponent implements OnInit {
-
   order: any = null;
   isLoading = true;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
   ) {}
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    this.http.get<any>(`http://localhost:8080/api/orders/${id}`, { withCredentials: true }).subscribe({
-      next: (order) => { this.order = order; this.isLoading = false; },
-      error: () => this.router.navigate(['/'])
-    });
+    this.http
+      .get<any>(`http://localhost:8080/api/orders/${id}`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (order) => {
+          this.order = order;
+          this.isLoading = false;
+        },
+        error: () => this.router.navigate(['/']),
+      });
   }
 
   getStatusText(status: string): string {
     const map: any = {
-      'PENDING_PAYMENT': 'รอชำระเงิน',
-      'SLIP_UPLOADED': 'รอตรวจสอบสลิป',
-      'CONFIRMED': 'ยืนยันแล้ว',
-      'CANCELLED': 'ยกเลิก'
+      PENDING_PAYMENT: 'รอชำระเงิน',
+      SLIP_UPLOADED: 'รอตรวจสอบสลิป',
+      CONFIRMED: 'ยืนยันแล้ว',
+      CANCELLED: 'ยกเลิก',
     };
     return map[status] || status;
   }
 
   getStatusColor(status: string): string {
     const map: any = {
-      'PENDING_PAYMENT': 'bg-yellow-100 text-yellow-700',
-      'SLIP_UPLOADED': 'bg-blue-100 text-blue-700',
-      'CONFIRMED': 'bg-green-100 text-green-700',
-      'CANCELLED': 'bg-red-100 text-red-700'
+      PENDING_PAYMENT: 'bg-yellow-100 text-yellow-700',
+      SLIP_UPLOADED: 'bg-blue-100 text-blue-700',
+      CONFIRMED: 'bg-green-100 text-green-700',
+      CANCELLED: 'bg-red-100 text-red-700',
     };
     return map[status] || 'bg-gray-100 text-gray-700';
   }
@@ -57,7 +63,9 @@ export class ReceiptComponent implements OnInit {
     if (!this.order) return;
     const o = this.order;
 
-    const itemRows = (o.items || []).map((item: any, i: number) => `
+    const itemRows = (o.items || [])
+      .map(
+        (item: any, i: number) => `
       <tr>
         <td style="padding:8px 10px; border-bottom:1px solid #eee; text-align:center;">${i + 1}</td>
         <td style="padding:8px 10px; border-bottom:1px solid #eee;">${item.productName}</td>
@@ -66,18 +74,30 @@ export class ReceiptComponent implements OnInit {
         <td style="padding:8px 10px; border-bottom:1px solid #eee; text-align:right;">${item.productPrice.toFixed(2)}</td>
         <td style="padding:8px 10px; border-bottom:1px solid #eee; text-align:right;">${item.subtotal.toFixed(2)}</td>
       </tr>
-    `).join('');
+    `,
+      )
+      .join('');
 
-    const confirmedBadge = o.status === 'CONFIRMED'
-      ? `<div style="text-align:center; margin-top:20px;">
+    const confirmedBadge =
+      o.status === 'CONFIRMED'
+        ? `<div style="text-align:center; margin-top:20px;">
            <div style="display:inline-block; border:2px solid #16a34a; border-radius:8px; padding:8px 24px; color:#16a34a; font-weight:bold; font-size:15px;">
              ✓ ชำระเงินเรียบร้อยแล้ว
            </div>
-         </div>` : '';
+         </div>`
+        : '';
 
-    const createdDate = new Date(o.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const createdDate = new Date(o.createdAt).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
     const confirmedDate = o.confirmedAt
-      ? new Date(o.confirmedAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
+      ? new Date(o.confirmedAt).toLocaleDateString('th-TH', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
       : '-';
 
     const html = `
@@ -110,7 +130,7 @@ export class ReceiptComponent implements OnInit {
     .footer-note { margin-top: 20px; font-size: 11px; color: #777; line-height: 1.8; }
     .sign-box { text-align: center; margin-top: 10px; }
     .sign-line { width: 160px; border-top: 1px solid #333; margin: 40px auto 4px; }
-    @page { margin: 10mm; size: A4 portrait; }
+    @page { margin: 15mm 20mm; size: A4 portrait; }
   </style>
 </head>
 <body>
@@ -203,8 +223,12 @@ export class ReceiptComponent implements OnInit {
     win?.document.write(html);
     win?.document.close();
     win?.focus();
-    setTimeout(() => { win?.print(); }, 600);
+    setTimeout(() => {
+      win?.print();
+    }, 600);
   }
 
-  goHome() { this.router.navigate(['/']); }
+  goHome() {
+    this.router.navigate(['/']);
+  }
 }
