@@ -1,0 +1,114 @@
+<div class="min-h-screen py-8 bg-gray-100">
+  <div class="max-w-lg px-4 mx-auto">
+
+    @if (isLoading) {
+      <div class="flex justify-center py-16">
+        <div class="w-10 h-10 border-4 border-red-500 rounded-full border-t-transparent animate-spin"></div>
+      </div>
+    }
+
+    @if (!isLoading && order) {
+      <!-- Preview ใบเสร็จในหน้าเว็บ -->
+      <div class="p-6 space-y-5 bg-white shadow-sm rounded-xl">
+
+        <!-- Header -->
+        <div class="pb-4 border-b">
+          <div class="flex items-start justify-between">
+            <div>
+              <h1 class="text-xl font-bold text-red-600">น้ำพริกลูกทุ่งสุพรรณ</h1>
+              <p class="text-xs text-gray-400">NAMPRIK LUKTHOONG SUPHANBURI</p>
+              <p class="mt-1 text-xs text-gray-400">123 ถนนตัวอย่าง กรุงเทพมหานคร 10000</p>
+            </div>
+            <div class="text-sm text-right">
+              <p class="text-xs text-gray-400">เลขที่</p>
+              <p class="font-bold text-gray-800">{{ formatOrderId(order.id) }}</p>
+              <p class="mt-1 text-xs text-gray-400">วันที่</p>
+              <p class="text-xs text-gray-800">{{ order.createdAt | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div class="text-center">
+          <span class="inline-block border-2 border-orange-400 rounded-lg px-8 py-1.5 text-orange-500 font-bold text-lg">
+            ใบเสร็จรับเงิน
+          </span>
+        </div>
+
+        <!-- ข้อมูลลูกค้า -->
+        <div class="space-y-1 text-sm">
+          <p><span class="inline-block w-16 text-gray-400">เรียน:</span> <span class="font-medium">{{ order.shippingName }}</span></p>
+          <p><span class="inline-block w-16 text-gray-400">ที่อยู่:</span> {{ order.shippingAddress }}</p>
+          <p><span class="inline-block w-16 text-gray-400">โทร:</span> {{ order.shippingPhone }}</p>
+        </div>
+
+        <!-- รายการสินค้า -->
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-t-2 border-b border-gray-800">
+              <th class="w-8 py-2 text-center">#</th>
+              <th class="py-2 text-left">รายการสินค้า</th>
+              <th class="w-12 py-2 text-center">จำนวน</th>
+              <th class="w-20 py-2 text-right">ราคา/ชิ้น</th>
+              <th class="w-24 py-2 text-right">จำนวนเงิน</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of order.items; track item.id; let i = $index) {
+              <tr class="border-b border-gray-100">
+                <td class="py-2 text-center text-gray-400">{{ i + 1 }}</td>
+                <td class="py-2">{{ item.productName }}</td>
+                <td class="py-2 text-center">{{ item.quantity }}</td>
+                <td class="py-2 text-right text-gray-600">{{ item.productPrice | number:'1.2-2' }}</td>
+                <td class="py-2 font-medium text-right">{{ item.subtotal | number:'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="border-t-2 border-gray-800">
+              <td colspan="4" class="py-2 font-bold text-right">รวมจำนวนทั้งสิ้น</td>
+              <td class="py-2 text-lg font-bold text-right text-red-600">฿{{ order.totalAmount | number:'1.2-2' }}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- สถานะ -->
+        @if (order.status === 'CONFIRMED') {
+          <div class="p-3 text-center border-2 border-green-500 rounded-xl">
+            <p class="font-bold text-green-600">✓ ชำระเงินเรียบร้อยแล้ว</p>
+            @if (order.confirmedAt) {
+              <p class="mt-1 text-xs text-gray-400">ยืนยันเมื่อ: {{ order.confirmedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            }
+          </div>
+        }
+        @if (order.status === 'SLIP_UPLOADED') {
+          <div class="p-3 text-center border-2 border-blue-400 rounded-xl">
+            <p class="font-bold text-blue-600">⏳ รอแอดมินตรวจสอบ</p>
+          </div>
+        }
+        @if (order.status === 'PENDING_PAYMENT') {
+          <div class="p-3 text-center border-2 border-yellow-400 rounded-xl">
+            <p class="font-bold text-yellow-600">⏳ รอการชำระเงิน</p>
+          </div>
+        }
+
+      </div>
+
+      <!-- ปุ่ม -->
+      <div class="flex gap-3 mt-4">
+        <button (click)="goHome()"
+          class="flex-1 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-gray-700">
+          กลับหน้าแรก
+        </button>
+        <button (click)="printReceipt()"
+          class="flex-1 py-2.5 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:from-red-600 hover:to-orange-600 transition flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          พิมพ์ / ดาวน์โหลด PDF
+        </button>
+      </div>
+    }
+  </div>
+</div>

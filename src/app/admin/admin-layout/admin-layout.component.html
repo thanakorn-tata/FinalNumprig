@@ -1,0 +1,137 @@
+<div class="flex h-screen overflow-hidden bg-gray-100">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside
+    [ngClass]="{
+      'w-64': !isSidebarCollapsed,
+      'w-16': isSidebarCollapsed
+    }"
+    class="flex flex-col flex-shrink-0 text-white transition-all duration-300 ease-in-out bg-gradient-to-b from-gray-900 to-gray-800"
+  >
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-4 py-5 border-b border-gray-700">
+      <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 bg-red-500 rounded-lg">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
+        </svg>
+      </div>
+      @if (!isSidebarCollapsed) {
+        <div class="overflow-hidden">
+          <p class="text-sm font-bold leading-tight">น้ำพริกลูกทุ่ง</p>
+          <p class="text-xs text-gray-400">Admin Panel</p>
+        </div>
+      }
+    </div>
+
+    <!-- Menu -->
+    <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+      @for (item of menuItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="bg-red-600 text-white"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-200 group"
+          [title]="isSidebarCollapsed ? item.label : ''"
+        >
+          <!-- Icons -->
+          <div class="flex-shrink-0 w-5 h-5">
+            @if (item.icon === 'dashboard') {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+            }
+            @if (item.icon === 'users') {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            }
+            @if (item.icon === 'products') {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            }
+
+            @if (item.icon === 'report') {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            }
+          </div>
+
+          @if (!isSidebarCollapsed) {
+            <span class="text-sm font-medium whitespace-nowrap">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <!-- Bottom -->
+    <div class="p-2 space-y-1 border-t border-gray-700">
+      <!-- กลับร้านค้า -->
+      <button (click)="goToShop()"
+        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition"
+        [title]="isSidebarCollapsed ? 'กลับร้านค้า' : ''"
+      >
+        <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        @if (!isSidebarCollapsed) {
+          <span class="text-sm">กลับร้านค้า</span>
+        }
+      </button>
+
+      <!-- Logout -->
+      <button (click)="logout()"
+        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition"
+        [title]="isSidebarCollapsed ? 'ออกจากระบบ' : ''"
+      >
+        <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        @if (!isSidebarCollapsed) {
+          <span class="text-sm">ออกจากระบบ</span>
+        }
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="flex flex-col flex-1 overflow-hidden">
+
+    <!-- Topbar -->
+    <header class="flex items-center justify-between flex-shrink-0 px-6 py-3 bg-white border-b shadow-sm">
+      <div class="flex items-center gap-4">
+        <!-- Toggle Sidebar -->
+        <button (click)="toggleSidebar()"
+          class="p-2 text-gray-600 transition rounded-lg hover:bg-gray-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        <h1 class="text-lg font-semibold text-gray-700">Admin Panel</h1>
+      </div>
+
+      <!-- Admin User Info -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center w-8 h-8 text-sm font-bold text-white bg-red-500 rounded-full">
+          {{ username.charAt(0).toUpperCase() }}
+        </div>
+        <div class="hidden sm:block">
+          <p class="text-sm font-medium text-gray-700">{{ username }}</p>
+          <p class="text-xs text-gray-400">Administrator</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

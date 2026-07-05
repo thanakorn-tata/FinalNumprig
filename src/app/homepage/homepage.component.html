@@ -1,0 +1,330 @@
+<!-- ======================================================
+     HOMEPAGE — Red · Orange · White Theme
+     ====================================================== -->
+<div class="min-h-screen" style="background:#fff5f5;">
+  <div class="max-w-6xl mx-auto bg-white shadow-2xl" style="border-top:4px solid #dc2626;">
+    <main class="pb-12">
+
+      <!-- ─── CAROUSEL ─── -->
+      <section>
+        <div class="relative overflow-hidden shadow-2xl"
+          (mouseenter)="onCarouselMouseEnter()" (mouseleave)="onCarouselMouseLeave()">
+          <div class="relative h-72 md:h-96">
+            @for (slide of slides; track slide.id) {
+              <div [ngClass]="{'opacity-100':currentSlide===$index,'opacity-0':currentSlide!==$index}"
+                class="absolute inset-0 transition-opacity duration-1000">
+                <img [src]="slide.image" [alt]="slide.title" class="object-cover w-full h-full" />
+                <div class="absolute inset-0 flex flex-col justify-end p-8"
+                  style="background:linear-gradient(to top,rgba(153,27,27,0.85) 0%,rgba(194,65,12,0.4) 50%,transparent 100%);">
+                  <h2 class="mb-2 text-4xl font-extrabold tracking-tight text-white drop-shadow-lg">{{ slide.title }}</h2>
+                  <p class="text-lg font-medium text-orange-100">{{ slide.subtitle }}</p>
+                </div>
+              </div>
+            }
+          </div>
+          <button (click)="prevSlide()"
+            class="absolute p-2.5 -translate-y-1/2 rounded-full shadow-lg left-4 top-1/2 hover:scale-110 transition"
+            style="background:rgba(255,255,255,0.92);">
+            <svg class="w-5 h-5" style="color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <button (click)="nextSlide()"
+            class="absolute p-2.5 -translate-y-1/2 rounded-full shadow-lg right-4 top-1/2 hover:scale-110 transition"
+            style="background:rgba(255,255,255,0.92);">
+            <svg class="w-5 h-5" style="color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <div class="absolute flex gap-2 -translate-x-1/2 bottom-4 left-1/2">
+            @for (slide of slides; track slide.id) {
+              <button (click)="goToSlide($index)"
+                [style.background]="currentSlide===$index ? '#fff' : 'rgba(255,255,255,0.4)'"
+                [style.width]="currentSlide===$index ? '24px' : '10px'"
+                class="h-2.5 rounded-full transition-all duration-300">
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── SEARCH ─── -->
+      <section class="px-6 mt-8">
+        <div class="flex justify-center">
+          <div class="w-full max-w-lg">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="flex-1 h-px" style="background:linear-gradient(to right,transparent,#fca5a5);"></div>
+              <span class="text-xs font-bold tracking-widest uppercase" style="color:#dc2626;">ค้นหาสินค้า</span>
+              <div class="flex-1 h-px" style="background:linear-gradient(to left,transparent,#fca5a5);"></div>
+            </div>
+            <div class="relative">
+              <input type="text" [(ngModel)]="searchText" (input)="searchProducts()"
+                placeholder="ค้นหาน้ำพริก เครื่องปรุง ..."
+                class="w-full py-3.5 pl-12 pr-4 text-sm font-medium text-gray-700 bg-white border-2 rounded-xl outline-none transition-all"
+                style="border-color:#fca5a5;box-shadow:0 2px 12px rgba(220,38,38,0.08);"
+                onfocus="this.style.borderColor='#dc2626';this.style.boxShadow='0 0 0 3px rgba(220,38,38,0.12)';"
+                onblur="this.style.borderColor='#fca5a5';this.style.boxShadow='0 2px 12px rgba(220,38,38,0.08)';" />
+              <svg class="absolute w-5 h-5 -translate-y-1/2 left-4 top-1/2" style="color:#dc2626;"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── PRODUCTS ─── -->
+      <section class="px-6 mt-10">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-1 rounded-full h-7" style="background:linear-gradient(to bottom,#dc2626,#ea580c);"></div>
+            <h2 class="text-2xl font-extrabold" style="color:#1c1c1c;">สินค้าแนะนำ</h2>
+          </div>
+          <span class="text-xs font-semibold px-3 py-1.5 rounded-full"
+            style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;">
+            ทั้งหมด {{ filteredProducts.length }} รายการ
+          </span>
+        </div>
+
+        @if (isLoading) {
+          <div class="flex justify-center py-16">
+            <div class="w-10 h-10 border-4 rounded-full border-t-transparent animate-spin"
+              style="border-color:#dc2626;border-top-color:transparent;"></div>
+          </div>
+        }
+
+        @if (!isLoading && filteredProducts.length === 0) {
+          <div class="py-16 text-center">
+            <svg class="w-20 h-20 mx-auto mb-4" style="color:#fca5a5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="font-medium text-gray-400">ไม่พบสินค้าที่ค้นหา</p>
+          </div>
+        }
+
+        <!-- Product Grid -->
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+          @for (product of pagedProducts; track product.id) {
+            <div class="overflow-hidden transition-all duration-300 bg-white border group rounded-2xl hover:-translate-y-1"
+              style="border-color:#ffe4e6;box-shadow:0 2px 8px rgba(0,0,0,0.06);"
+              onmouseenter="this.style.boxShadow='0 12px 32px rgba(220,38,38,0.18)';this.style.borderColor='#fca5a5';"
+              onmouseleave="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';this.style.borderColor='#ffe4e6';">
+
+              <div class="relative overflow-hidden cursor-pointer h-44" (click)="openProductModal(product)">
+                <img [src]="getImageUrl(product.id)" [alt]="product.name"
+                  class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" />
+                <div class="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                  style="background:linear-gradient(to top,rgba(220,38,38,0.18),transparent 60%);"></div>
+              </div>
+
+              <div class="p-3.5">
+                <h3 class="text-sm font-bold text-gray-900 mb-0.5 truncate">{{ product.name }}</h3>
+                <p class="mb-3 text-xs leading-relaxed text-gray-400 line-clamp-2">{{ product.description }}</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-lg font-extrabold" style="color:#dc2626;">฿{{ product.price }}</span>
+                  <button (click)="addToCart(product)"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all hover:scale-105 active:scale-95"
+                    style="background:linear-gradient(135deg,#dc2626,#ea580c);box-shadow:0 2px 8px rgba(220,38,38,0.35);">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    ใส่ตะกร้า
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1) {
+          <div class="flex items-center justify-center gap-1.5 mt-10">
+            <button (click)="goToPage(1)" [disabled]="currentPage===1"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">«</button>
+            <button (click)="goToPage(currentPage-1)" [disabled]="currentPage===1"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">‹</button>
+
+            @for (page of pageNumbers; track page) {
+              <button (click)="goToPage(page)"
+                class="flex items-center justify-center text-sm font-bold transition rounded-lg w-9 h-9"
+                [style.background]="currentPage===page ? 'linear-gradient(135deg,#dc2626,#ea580c)' : 'transparent'"
+                [style.color]="currentPage===page ? '#fff' : '#374151'"
+                [style.boxShadow]="currentPage===page ? '0 3px 10px rgba(220,38,38,0.35)' : 'none'">
+                {{ page }}
+              </button>
+            }
+
+            <button (click)="goToPage(currentPage+1)" [disabled]="currentPage===totalPages"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">›</button>
+            <button (click)="goToPage(totalPages)" [disabled]="currentPage===totalPages"
+              class="flex items-center justify-center w-8 h-8 text-sm font-bold transition rounded-lg disabled:opacity-30 hover:bg-red-50"
+              style="color:#dc2626;">»</button>
+          </div>
+        }
+      </section>
+
+      <!-- ─── PROMO BANNER ─── -->
+      <section class="mx-6 mt-14">
+        <div class="relative p-10 overflow-hidden text-center text-white rounded-2xl"
+          style="background:linear-gradient(135deg,#991b1b 0%,#dc2626 40%,#ea580c 100%);">
+          <div class="absolute inset-0 opacity-10"
+            style="background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:22px 22px;"></div>
+          <div class="absolute w-48 h-48 rounded-full -right-10 -top-10 opacity-10"
+            style="background:radial-gradient(circle,#fff,transparent);"></div>
+          <div class="relative z-10">
+            <span class="inline-block px-4 py-1 mb-4 text-xs font-extrabold tracking-widest uppercase bg-white rounded-full"
+              style="color:#dc2626;">🔥 Limited Time</span>
+            <h3 class="mb-2 text-3xl font-extrabold tracking-tight">โปรโมชันพิเศษ!</h3>
+            <p class="mb-6 font-medium text-orange-100">
+              ซื้อครบ <span class="text-xl font-extrabold text-white">300 บาท</span> รับส่วนลดทันที 10%
+            </p>
+            <button class="inline-flex items-center gap-2 px-8 py-3 text-sm font-extrabold transition-all rounded-xl hover:scale-105 active:scale-95"
+              style="background:#fff;color:#dc2626;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+              </svg>
+              ช้อปเลย!
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ─── TOAST ─── -->
+@if (toastVisible) {
+  <div class="fixed z-50 flex items-center gap-3 px-5 py-3.5 text-sm font-semibold text-white rounded-xl shadow-2xl bottom-6 right-6"
+    style="background:linear-gradient(135deg,#15803d,#16a34a);box-shadow:0 8px 24px rgba(21,128,61,0.4);">
+    <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 bg-white rounded-full">
+      <svg class="w-3.5 h-3.5" style="color:#15803d;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    {{ toastMessage }}
+  </div>
+}
+
+<!-- ─── PRODUCT MODAL ─── -->
+@if (selectedProduct) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    style="background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);"
+    (click)="closeProductModal()">
+    <div class="relative w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl"
+      style="max-height:90vh;overflow-y:auto;"
+      (click)="$event.stopPropagation()">
+
+      <!-- ปุ่มปิด -->
+      <button (click)="closeProductModal()"
+        class="absolute z-10 flex items-center justify-center w-8 h-8 transition bg-white rounded-full shadow-md top-3 right-3 hover:bg-gray-100">
+        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <!-- รูปสินค้า -->
+      <div class="w-full h-64 overflow-hidden bg-gray-50">
+        <img [src]="getImageUrl(selectedProduct.id)" [alt]="selectedProduct.name"
+          class="object-cover w-full h-full" />
+      </div>
+
+      <!-- ข้อมูลสินค้า -->
+      <div class="p-5 space-y-4">
+
+        <!-- ชื่อ + ราคา -->
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-xl font-extrabold text-gray-900">{{ selectedProduct.name }}</h3>
+            @if (selectedProduct.stock > 0) {
+              <span class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full"
+                style="background:#dcfce7;color:#16a34a;">
+                มีสินค้า {{ selectedProduct.stock }} ชิ้น
+              </span>
+            } @else {
+              <span class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full"
+                style="background:#fee2e2;color:#dc2626;">
+                สินค้าหมด
+              </span>
+            }
+          </div>
+          <div class="flex-shrink-0 text-right">
+            <p class="text-3xl font-extrabold" style="color:#dc2626;">฿{{ selectedProduct.price }}</p>
+          </div>
+        </div>
+
+        <!-- รายละเอียด -->
+        <div class="p-4 rounded-xl" style="background:#fff5f5;">
+          <p class="mb-1 text-sm font-semibold text-gray-700">รายละเอียดสินค้า</p>
+          <p class="text-sm leading-relaxed text-gray-600">
+            {{ selectedProduct.description || 'ไม่มีรายละเอียดเพิ่มเติม' }}
+          </p>
+        </div>
+
+        <!-- หมวดหมู่ -->
+        @if (selectedProduct.category) {
+          <div class="flex items-center gap-2 text-sm text-gray-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+            </svg>
+            <span>หมวดหมู่: <span class="font-medium text-gray-700">{{ selectedProduct.category }}</span></span>
+          </div>
+        }
+
+        <!-- จำนวน -->
+        <div class="flex items-center justify-between p-4 rounded-xl" style="background:#fff5f5;">
+          <span class="text-sm font-semibold text-gray-700">จำนวน</span>
+          <div class="flex items-center gap-3">
+            <button (click)="decreaseQty()" [disabled]="modalQty <= 1"
+              class="flex items-center justify-center text-lg font-bold transition rounded-full w-9 h-9 disabled:opacity-30"
+              style="background:white;border:2px solid #fca5a5;color:#dc2626;">−</button>
+            <span class="w-10 text-lg font-extrabold text-center text-gray-800">{{ modalQty }}</span>
+            <button (click)="increaseQty()" [disabled]="modalQty >= selectedProduct!.stock"
+              class="flex items-center justify-center text-lg font-bold text-white transition rounded-full w-9 h-9 disabled:opacity-30"
+              style="background:linear-gradient(135deg,#dc2626,#ea580c);">+</button>
+          </div>
+          <span class="text-sm font-bold" style="color:#dc2626;">
+            ฿{{ selectedProduct!.price * modalQty | number:'1.0-0' }}
+          </span>
+        </div>
+
+        <!-- ปุ่ม -->
+        @if (selectedProduct.stock > 0) {
+          <div class="flex gap-3 pt-1">
+            <button (click)="addToCart(selectedProduct, true)" [disabled]="isAddingToCart"
+              class="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl border-2 transition-all hover:scale-[1.02] disabled:opacity-60"
+              style="border-color:#dc2626;color:#dc2626;background:white;">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+              ใส่ตะกร้า
+            </button>
+            <button (click)="buyNow(selectedProduct)" [disabled]="isAddingToCart"
+              class="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold text-white rounded-xl transition-all hover:scale-[1.02] disabled:opacity-60"
+              style="background:linear-gradient(135deg,#dc2626,#ea580c);box-shadow:0 4px 14px rgba(220,38,38,0.4);">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+              </svg>
+              {{ isAddingToCart ? 'กำลังดำเนินการ...' : 'สั่งซื้อเลย' }}
+            </button>
+          </div>
+        } @else {
+          <button disabled
+            class="w-full py-3 text-sm font-bold text-gray-400 bg-gray-100 cursor-not-allowed rounded-xl">
+            สินค้าหมดชั่วคราว
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

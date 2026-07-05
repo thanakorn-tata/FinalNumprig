@@ -1,0 +1,207 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+    <p class="mt-1 text-gray-500">ภาพรวมระบบทั้งหมด</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="flex justify-center py-24">
+      <div class="w-10 h-10 border-4 border-red-500 rounded-full border-t-transparent animate-spin"></div>
+    </div>
+  } @else {
+
+    <!-- ── KPI Cards ── -->
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div class="p-5 bg-white border-l-4 border-blue-500 shadow-sm rounded-xl">
+        <p class="text-xs font-medium text-gray-500">สินค้าทั้งหมด</p>
+        <p class="mt-1 text-3xl font-bold text-blue-600">{{ totalProducts }}</p>
+        <a routerLink="/admin/products" class="block mt-2 text-xs text-blue-400 hover:underline">ดูสินค้า →</a>
+      </div>
+      <div class="p-5 bg-white border-l-4 border-green-500 shadow-sm rounded-xl">
+        <p class="text-xs font-medium text-gray-500">ผู้ใช้ทั้งหมด</p>
+        <p class="mt-1 text-3xl font-bold text-green-600">{{ totalUsers }}</p>
+        <a routerLink="/admin/users" class="block mt-2 text-xs text-green-400 hover:underline">จัดการ User →</a>
+      </div>
+      <div class="p-5 bg-white border-l-4 border-purple-500 shadow-sm rounded-xl">
+        <p class="text-xs font-medium text-gray-500">ออเดอร์ทั้งหมด</p>
+        <p class="mt-1 text-3xl font-bold text-purple-600">{{ totalOrders }}</p>
+        <p class="mt-2 text-xs text-gray-400">รอตรวจสลิป: <span class="font-bold text-orange-500">{{ pendingOrders }}</span></p>
+      </div>
+      <div class="p-5 bg-white border-l-4 border-red-500 shadow-sm rounded-xl">
+        <p class="text-xs font-medium text-gray-500">รายได้รวม</p>
+        <p class="mt-1 text-2xl font-bold text-red-600">฿{{ totalRevenue.toLocaleString() }}</p>
+        <p class="mt-2 text-xs text-gray-400">ยืนยันแล้ว {{ confirmedOrders }} ออเดอร์</p>
+      </div>
+    </div>
+
+    <!-- ── Row 2: Bar + Doughnut ── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- กราฟแท่ง: สินค้าขายดี -->
+      <div class="p-5 bg-white shadow-sm rounded-xl lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-gray-800">สินค้าขายดี</h3>
+            <p class="text-xs text-gray-400">จำนวนที่ขายได้ (ออเดอร์ที่ยืนยันแล้ว)</p>
+          </div>
+          <span class="px-2 py-1 text-xs font-semibold text-red-600 rounded-lg bg-red-50">Top 8</span>
+        </div>
+        @if (topSalesData.length === 0) {
+          <div class="flex items-center justify-center h-48 text-sm text-gray-400">ยังไม่มีข้อมูลการขาย</div>
+        } @else {
+          <div class="h-56"><canvas #barChart></canvas></div>
+        }
+      </div>
+
+      <!-- กราฟโดนัท: สัดส่วนรายได้ -->
+      <div class="p-5 bg-white shadow-sm rounded-xl">
+        <div class="mb-4">
+          <h3 class="font-bold text-gray-800">สัดส่วนรายได้</h3>
+          <p class="text-xs text-gray-400">แบ่งตามสินค้า (Top 6)</p>
+        </div>
+        @if (topSalesData.length === 0) {
+          <div class="flex items-center justify-center h-48 text-sm text-gray-400">ยังไม่มีข้อมูล</div>
+        } @else {
+          <div class="h-56"><canvas #doughnutChart></canvas></div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Row 3: Stock Bar + Order Pie ── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- กราฟแท่งนอน: stock คงเหลือ -->
+      <div class="p-5 bg-white shadow-sm rounded-xl lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-gray-800">สต็อกคงเหลือ</h3>
+            <p class="text-xs text-gray-400">
+              <span class="inline-block w-2 h-2 mr-1 bg-red-500 rounded-full"></span>หมด
+              <span class="inline-block w-2 h-2 ml-2 mr-1 bg-yellow-400 rounded-full"></span>ใกล้หมด (&lt;20)
+              <span class="inline-block w-2 h-2 ml-2 mr-1 bg-green-500 rounded-full"></span>ปกติ
+            </p>
+          </div>
+          <span class="px-2 py-1 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg">10 รายการต่ำสุด</span>
+        </div>
+        <div class="h-64"><canvas #stockChart></canvas></div>
+      </div>
+
+      <!-- กราฟวงกลม: สถานะออเดอร์ -->
+      <div class="p-5 bg-white shadow-sm rounded-xl">
+        <div class="mb-4">
+          <h3 class="font-bold text-gray-800">สถานะออเดอร์</h3>
+          <p class="text-xs text-gray-400">ทั้งหมด {{ totalOrders }} รายการ</p>
+        </div>
+        @if (totalOrders === 0) {
+          <div class="flex items-center justify-center h-48 text-sm text-gray-400">ยังไม่มีออเดอร์</div>
+        } @else {
+          <div class="h-64"><canvas #orderStatusChart></canvas></div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Row 4: Top Products + Need Restock ── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+      <!-- สินค้าขายดี Top 3 -->
+      <div class="p-5 bg-white shadow-sm rounded-xl">
+        <h3 class="mb-4 font-bold text-gray-800">🏆 สินค้าขายดีสุด</h3>
+        @if (topProducts.length === 0) {
+          <p class="py-6 text-sm text-center text-gray-400">ยังไม่มีข้อมูลการขาย</p>
+        } @else {
+          <div class="space-y-3">
+            @for (p of topProducts; track p.name; let i = $index) {
+              <div class="flex items-center gap-4 p-3 rounded-xl"
+                [ngClass]="i === 0 ? 'bg-yellow-50 border border-yellow-200' : i === 1 ? 'bg-gray-50 border border-gray-200' : 'bg-orange-50 border border-orange-200'">
+                <div class="flex items-center justify-center flex-shrink-0 text-base font-extrabold rounded-full w-9 h-9"
+                  [ngClass]="i === 0 ? 'bg-yellow-400 text-white' : i === 1 ? 'bg-gray-400 text-white' : 'bg-orange-400 text-white'">
+                  {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-gray-800 truncate">{{ p.name }}</p>
+                  <p class="text-xs text-gray-500">ขายได้ {{ p.qty }} ชิ้น</p>
+                </div>
+                <p class="flex-shrink-0 text-sm font-bold text-green-600">฿{{ p.revenue.toLocaleString() }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- สินค้าต้องเติมสต็อก -->
+      <div class="p-5 bg-white shadow-sm rounded-xl">
+        <h3 class="mb-4 font-bold text-gray-800">⚠️ สินค้าต้องเติมสต็อก</h3>
+        @if (needRestockProducts.length === 0) {
+          <div class="flex flex-col items-center justify-center py-6">
+            <p class="mb-2 text-4xl">✅</p>
+            <p class="text-sm text-gray-400">สต็อกทุกรายการอยู่ในเกณฑ์ดี</p>
+          </div>
+        } @else {
+          <div class="space-y-2">
+            @for (p of needRestockProducts; track p.id) {
+              <div class="flex items-center justify-between p-3 rounded-xl"
+                [ngClass]="p.stock === 0 ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'">
+                <div class="flex items-center min-w-0 gap-3">
+                  <span class="text-lg">{{ p.stock === 0 ? '🔴' : '🟡' }}</span>
+                  <p class="text-sm font-semibold text-gray-800 truncate">{{ p.name }}</p>
+                </div>
+                <div class="flex items-center flex-shrink-0 gap-2">
+                  <span class="px-2 py-0.5 text-xs font-bold rounded-full"
+                    [ngClass]="p.stock === 0 ? 'bg-red-500 text-white' : 'bg-yellow-400 text-white'">
+                    {{ p.stock === 0 ? 'หมด' : p.stock + ' ชิ้น' }}
+                  </span>
+                  <a routerLink="/admin/products" class="text-xs text-blue-500 hover:underline">เติม</a>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Quick Links ── -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <a routerLink="/admin/products"
+        class="flex items-center gap-4 p-5 transition bg-white shadow-sm rounded-xl hover:shadow-md group">
+        <div class="flex items-center justify-center transition bg-blue-100 w-11 h-11 group-hover:bg-blue-200 rounded-xl">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-semibold text-gray-800">เพิ่มสินค้าใหม่</p>
+          <p class="text-xs text-gray-500">ไปหน้าจัดการสินค้า</p>
+        </div>
+      </a>
+      <a routerLink="/admin/users"
+        class="flex items-center gap-4 p-5 transition bg-white shadow-sm rounded-xl hover:shadow-md group">
+        <div class="flex items-center justify-center transition bg-green-100 w-11 h-11 group-hover:bg-green-200 rounded-xl">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-semibold text-gray-800">จัดการ User</p>
+          <p class="text-xs text-gray-500">ดู/แก้ไขผู้ใช้งาน</p>
+        </div>
+      </a>
+      <a routerLink="/admin/reports"
+        class="flex items-center gap-4 p-5 transition bg-white shadow-sm rounded-xl hover:shadow-md group">
+        <div class="flex items-center justify-center transition bg-yellow-100 w-11 h-11 group-hover:bg-yellow-200 rounded-xl">
+          <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-semibold text-gray-800">ดูรายงาน</p>
+          <p class="text-xs text-gray-500">Export PDF / Excel</p>
+        </div>
+      </a>
+    </div>
+
+  }
+</div>

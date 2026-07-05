@@ -1,0 +1,189 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800">จัดการ User</h2>
+    <p class="mt-1 text-gray-500">ดูและจัดการบัญชีผู้ใช้งานทั้งหมด</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+    <div class="p-6 bg-white border-l-4 border-blue-500 shadow-sm rounded-xl">
+      <p class="text-sm font-medium text-gray-500">ผู้ใช้ทั้งหมด</p>
+      <p class="mt-1 text-3xl font-bold text-blue-600">{{ totalUsers }}</p>
+    </div>
+    <div class="p-6 bg-white border-l-4 border-green-500 shadow-sm rounded-xl">
+      <p class="text-sm font-medium text-gray-500">ใช้งานอยู่</p>
+      <p class="mt-1 text-3xl font-bold text-green-600">{{ activeUsers }}</p>
+    </div>
+    <div class="p-6 bg-white border-l-4 border-red-500 shadow-sm rounded-xl">
+      <p class="text-sm font-medium text-gray-500">Admin</p>
+      <p class="mt-1 text-3xl font-bold text-red-600">{{ adminCount }}</p>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="p-4 bg-white shadow-sm rounded-xl">
+    <div class="relative max-w-md">
+      <input type="text" [(ngModel)]="searchText" (input)="searchUsers()"
+        placeholder="ค้นหา username, email, ชื่อ..."
+        class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+      <svg class="absolute w-5 h-5 text-gray-400 -translate-y-1/2 left-3 top-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-hidden bg-white shadow-sm rounded-xl">
+    <table class="w-full">
+      <thead class="border-b bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-xs font-semibold text-left text-gray-600 uppercase">#</th>
+          <th class="px-6 py-3 text-xs font-semibold text-left text-gray-600 uppercase">ผู้ใช้</th>
+          <th class="px-6 py-3 text-xs font-semibold text-left text-gray-600 uppercase">Email</th>
+          <th class="px-6 py-3 text-xs font-semibold text-center text-gray-600 uppercase">Role</th>
+          <th class="px-6 py-3 text-xs font-semibold text-center text-gray-600 uppercase">สถานะ</th>
+          <th class="px-6 py-3 text-xs font-semibold text-center text-gray-600 uppercase">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        @if (isLoading) {
+          <tr><td colspan="6" class="px-6 py-12 text-center">
+            <div class="flex justify-center">
+              <div class="w-8 h-8 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+          </td></tr>
+        }
+        @if (!isLoading && filteredUsers.length === 0) {
+          <tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">ไม่พบผู้ใช้</td></tr>
+        }
+        @for (user of filteredUsers; track user.id; let i = $index) {
+          <tr class="transition hover:bg-gray-50" [ngClass]="{ 'opacity-50': !user.active }">
+            <td class="px-6 py-4 text-sm text-gray-500">{{ i + 1 }}</td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="flex items-center justify-center flex-shrink-0 text-sm font-bold text-white rounded-full w-9 h-9"
+                  [ngClass]="user.role === 'ADMIN' ? 'bg-red-500' : 'bg-blue-400'">
+                  {{ user.username.charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-800">{{ user.username }}</p>
+                  <p class="text-xs text-gray-400">{{ user.fullname || '-' }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600">{{ user.email || '-' }}</td>
+            <td class="px-6 py-4 text-center">
+              <select [value]="user.role" (change)="changeRole(user, $any($event.target).value)"
+                class="px-2 py-1 text-xs font-semibold border rounded-full cursor-pointer focus:outline-none"
+                [ngClass]="{ 'bg-red-100 text-red-700 border-red-200': user.role === 'ADMIN', 'bg-blue-100 text-blue-700 border-blue-200': user.role !== 'ADMIN' }">
+                <option value="USER">USER</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <div class="flex flex-col items-center gap-1">
+                <button (click)="toggleActive(user)"
+                  class="relative inline-flex items-center h-6 transition-colors duration-300 rounded-full w-11"
+                  [ngClass]="{ 'bg-green-500': user.active, 'bg-gray-300': !user.active }">
+                  <span class="inline-block w-4 h-4 transition-transform duration-300 transform bg-white rounded-full shadow"
+                    [ngClass]="{ 'translate-x-6': user.active, 'translate-x-1': !user.active }"></span>
+                </button>
+                <span class="text-xs font-medium" [ngClass]="{ 'text-green-600': user.active, 'text-gray-400': !user.active }">
+                  {{ user.active ? 'Active' : 'Banned' }}
+                </span>
+              </div>
+            </td>
+            <!-- ✅ ปุ่ม Edit -->
+            <td class="px-6 py-4 text-center">
+              <button (click)="openEdit(user)"
+                class="flex items-center gap-1.5 px-3 py-1.5 mx-auto text-xs font-semibold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                แก้ไข
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ✅ Edit Modal -->
+@if (editingUser) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+    (click)="closeEdit()">
+    <div class="w-full max-w-md bg-white shadow-xl rounded-2xl" (click)="$event.stopPropagation()">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-5 border-b">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 text-sm font-bold text-white rounded-full"
+            [ngClass]="editingUser.role === 'ADMIN' ? 'bg-red-500' : 'bg-blue-400'">
+            {{ editingUser.username.charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <h3 class="font-bold text-gray-800">แก้ไขข้อมูล User</h3>
+            <p class="text-xs text-gray-400">ID: {{ editingUser.id }}</p>
+          </div>
+        </div>
+        <button (click)="closeEdit()" class="text-2xl text-gray-400 hover:text-gray-600">✕</button>
+      </div>
+
+      <!-- Form -->
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">
+            Username <span class="text-red-500">*</span>
+          </label>
+          <input type="text" [(ngModel)]="editForm.username"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label>
+          <input type="text" [(ngModel)]="editForm.fullname"
+            placeholder="ชื่อ-นามสกุล"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+          <input type="email" [(ngModel)]="editForm.email"
+            placeholder="email@example.com"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">
+            รหัสผ่านใหม่
+            <span class="ml-1 text-xs font-normal text-gray-400">(เว้นว่างถ้าไม่ต้องการเปลี่ยน)</span>
+          </label>
+          <input type="password" [(ngModel)]="editForm.password"
+            placeholder="••••••••"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex gap-3 px-5 pb-5">
+        <button (click)="closeEdit()"
+          class="flex-1 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+          ยกเลิก
+        </button>
+        <button (click)="saveEdit()" [disabled]="isSaving"
+          class="flex-1 py-2.5 text-sm font-bold text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition disabled:opacity-60">
+          {{ isSaving ? 'กำลังบันทึก...' : 'บันทึก' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Toast -->
+@if (toastVisible) {
+  <div [ngClass]="{ 'bg-green-600': toastType === 'success', 'bg-red-600': toastType === 'error' }"
+    class="fixed z-50 px-5 py-3 text-white shadow-lg bottom-6 right-6 rounded-xl">
+    {{ toastMessage }}
+  </div>
+}

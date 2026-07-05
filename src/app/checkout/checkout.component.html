@@ -1,0 +1,284 @@
+<div class="min-h-screen py-8 bg-gray-100">
+  <div class="max-w-2xl px-4 mx-auto">
+
+    <!-- Step Indicator -->
+    <div class="flex items-center justify-center gap-2 mb-8">
+      @for (s of [1, 2, 3]; track s) {
+        <div class="flex items-center gap-2">
+          <div class="flex items-center justify-center w-8 h-8 text-sm font-bold transition-all rounded-full"
+            [ngClass]="{ 'bg-red-500 text-white': step >= s, 'bg-gray-200 text-gray-500': step < s }">
+            @if (step > s) {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+              </svg>
+            } @else { {{ s }} }
+          </div>
+          <span class="hidden text-sm sm:block"
+            [ngClass]="step >= s ? 'text-red-500 font-semibold' : 'text-gray-400'">
+            {{ s === 1 ? "ข้อมูลจัดส่ง" : s === 2 ? "ชำระเงิน" : "รอยืนยัน" }}
+          </span>
+          @if (s < 3) {
+            <div class="w-8 h-0.5 mx-1" [ngClass]="step > s ? 'bg-red-400' : 'bg-gray-200'"></div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (isLoading) {
+      <div class="flex justify-center py-16">
+        <div class="w-10 h-10 border-4 border-red-500 rounded-full border-t-transparent animate-spin"></div>
+      </div>
+    }
+
+    <!-- STEP 1 -->
+    @if (!isLoading && step === 1) {
+      <div class="space-y-4">
+
+        <!-- สรุปสินค้า -->
+        <div class="p-5 bg-white shadow-sm rounded-xl">
+          <h3 class="mb-3 font-bold text-gray-800">สรุปคำสั่งซื้อ</h3>
+          @for (item of cartItems; track item.cartId) {
+            <div class="flex items-center justify-between py-2 border-b last:border-0">
+              <div>
+                <p class="font-medium text-gray-800">{{ item.productName }}</p>
+                <p class="text-sm text-gray-400">฿{{ item.productPrice }} × {{ item.quantity }}</p>
+              </div>
+              <p class="font-bold text-gray-800">฿{{ item.subtotal }}</p>
+            </div>
+          }
+          <div class="flex items-center justify-between pt-3 mt-3 border-t">
+            <span class="font-bold text-gray-700">ยอดรวม</span>
+            <span class="text-xl font-bold text-red-600">฿{{ total }}</span>
+          </div>
+        </div>
+
+        <!-- ✅ เลือกที่อยู่ -->
+        <div class="p-5 bg-white shadow-sm rounded-xl">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-gray-800">ที่อยู่จัดส่ง</h3>
+            <button (click)="openAddForm()" title="เพิ่มที่อยู่ใหม่"
+              class="flex items-center gap-1 text-xs font-semibold text-red-500 transition hover:text-red-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              เพิ่มที่อยู่ใหม่
+            </button>
+          </div>
+
+          <!-- ✅ แสดงรายการที่อยู่ที่บันทึกไว้ -->
+          @if (savedAddresses.length > 0) {
+            <div class="mb-4 space-y-2">
+              @for (addr of savedAddresses; track addr.id) {
+                <div class="flex items-start gap-3 p-3 transition border-2 cursor-pointer rounded-xl"
+                  [ngClass]="selectedAddressId === addr.id
+                    ? 'border-red-400 bg-red-50'
+                    : 'border-gray-100 hover:border-gray-300'"
+                  (click)="selectAddress(addr)">
+
+                  <!-- radio -->
+                  <div class="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                    [ngClass]="selectedAddressId === addr.id ? 'border-red-500' : 'border-gray-300'">
+                    @if (selectedAddressId === addr.id) {
+                      <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                    }
+                  </div>
+
+                  <!-- ข้อมูล -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-bold text-gray-800">{{ addr.label }}</span>
+                      @if (addr.isDefault) {
+                        <span class="text-xs px-1.5 py-0.5 rounded font-semibold bg-green-100 text-green-600">หลัก</span>
+                      }
+                    </div>
+                    <p class="text-sm text-gray-700 mt-0.5">{{ addr.recipientName }} · {{ addr.phone }}</p>
+                    <p class="text-xs text-gray-400 truncate">{{ addr.address }}</p>
+                  </div>
+
+                  <!-- ปุ่มจัดการ -->
+                  <div class="flex items-center flex-shrink-0 gap-1" (click)="$event.stopPropagation()">
+                    @if (!addr.isDefault) {
+                      <button (click)="setDefault(addr)" title="ตั้งเป็นที่อยู่หลัก"
+                        class="px-2 py-1 text-xs text-gray-500 transition rounded hover:bg-gray-100">
+                        ตั้งเป็นหลัก
+                      </button>
+                    }
+                    <button (click)="openEditForm(addr)" title="แก้ไขที่อยู่" aria-label="แก้ไขที่อยู่"
+                      class="p-1.5 text-blue-400 hover:bg-blue-50 rounded-lg transition">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </button>
+                    <button (click)="deleteAddress(addr)" title="ลบที่อยู่" aria-label="ลบที่อยู่"
+                      class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- ✅ Form เพิ่ม/แก้ไขที่อยู่ -->
+          @if (showAddressForm) {
+            <div class="p-4 mb-4 space-y-3 border border-red-300 border-dashed rounded-xl bg-red-50">
+              <h4 class="text-sm font-bold text-gray-700">
+                {{ editingAddressId ? 'แก้ไขที่อยู่' : 'เพิ่มที่อยู่ใหม่' }}
+              </h4>
+              <div>
+                <label for="addressFormLabel" class="block mb-1 text-xs font-medium text-gray-600">ชื่อที่อยู่ (เช่น บ้าน ที่ทำงาน)</label>
+                <input id="addressFormLabel" type="text" [(ngModel)]="addressForm.label"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400" />
+              </div>
+              <div>
+                <label for="addressFormRecipient" class="block mb-1 text-xs font-medium text-gray-600">ชื่อผู้รับ <span class="text-red-500">*</span></label>
+                <input id="addressFormRecipient" type="text" [(ngModel)]="addressForm.recipientName" placeholder="ชื่อ-นามสกุล"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400" />
+              </div>
+              <div>
+                <label for="addressFormPhone" class="block mb-1 text-xs font-medium text-gray-600">เบอร์โทร <span class="text-red-500">*</span></label>
+                <input id="addressFormPhone" type="tel" [(ngModel)]="addressForm.phone" placeholder="0XX-XXX-XXXX"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400" />
+              </div>
+              <div>
+                <label for="addressFormAddress" class="block mb-1 text-xs font-medium text-gray-600">ที่อยู่ <span class="text-red-500">*</span></label>
+                <textarea id="addressFormAddress" [(ngModel)]="addressForm.address" rows="2"
+                  placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400"></textarea>
+              </div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="addressForm.isDefault" class="w-4 h-4 accent-red-500" />
+                <span class="text-xs text-gray-600">ตั้งเป็นที่อยู่หลัก</span>
+              </label>
+              <div class="flex gap-2">
+                <button (click)="showAddressForm = false"
+                  class="flex-1 py-2 text-sm text-gray-600 transition border border-gray-300 rounded-lg hover:bg-gray-50">
+                  ยกเลิก
+                </button>
+                <button (click)="saveAddressForm()" [disabled]="isSavingAddress"
+                  class="flex-1 py-2 text-sm font-bold text-white transition rounded-lg bg-gradient-to-br from-red-600 to-orange-600 disabled:opacity-60">
+                  {{ isSavingAddress ? 'กำลังบันทึก...' : 'บันทึก' }}
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ✅ ถ้าไม่มีที่อยู่เลย ให้กรอกตรงๆ -->
+          @if (savedAddresses.length === 0 && !showAddressForm) {
+            <div class="space-y-3">
+              <div>
+                <label for="shippingName" class="block mb-1 text-sm font-medium text-gray-600">ชื่อผู้รับ <span class="text-red-500">*</span></label>
+                <input id="shippingName" type="text" [(ngModel)]="shippingForm.shippingName" placeholder="ชื่อ-นามสกุล"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400" />
+              </div>
+              <div>
+                <label for="shippingPhone" class="block mb-1 text-sm font-medium text-gray-600">เบอร์โทร <span class="text-red-500">*</span></label>
+                <input id="shippingPhone" type="tel" [(ngModel)]="shippingForm.shippingPhone" placeholder="0XX-XXX-XXXX"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400" />
+              </div>
+              <div>
+                <label for="shippingAddress" class="block mb-1 text-sm font-medium text-gray-600">ที่อยู่จัดส่ง <span class="text-red-500">*</span></label>
+                <textarea id="shippingAddress" [(ngModel)]="shippingForm.shippingAddress" rows="3"
+                  placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400"></textarea>
+              </div>
+            </div>
+          }
+
+          <button (click)="proceedToPayment()" [disabled]="isCreatingOrder"
+            class="w-full py-3 mt-4 font-bold text-white transition bg-gradient-to-r from-red-500 to-orange-500 rounded-xl hover:from-red-600 hover:to-orange-600 disabled:opacity-60">
+            {{ isCreatingOrder ? "กำลังดำเนินการ..." : "ดำเนินการชำระเงิน →" }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- STEP 2 -->
+    @if (step === 2) {
+      <div class="p-6 space-y-5 bg-white shadow-sm rounded-xl">
+        <div class="text-center">
+          <h3 class="text-xl font-bold text-gray-800">ชำระเงิน</h3>
+          <p class="mt-1 text-gray-500">สแกน QR Code แล้วอัปโหลดสลิป</p>
+        </div>
+        <div class="p-4 text-center bg-red-50 rounded-xl">
+          <p class="text-sm text-gray-600">ยอดที่ต้องชำระ</p>
+          <p class="mt-1 text-3xl font-bold text-red-600">฿{{ total }}</p>
+          <p class="mt-1 text-xs text-gray-400">Order #{{ orderId }}</p>
+        </div>
+        <div class="flex justify-center">
+          <div class="inline-block p-3 border-2 border-gray-200 rounded-xl">
+            <img [src]="qrCodeUrl" alt="QR Code สำหรับชำระเงินผ่านพร้อมเพย์" class="object-contain w-48 h-48"
+              onerror="this.src='https://via.placeholder.com/192x192?text=QR+Code'" />
+          </div>
+        </div>
+        <div class="p-4 text-center bg-gray-50 rounded-xl">
+          <p class="text-sm text-gray-500">PromptPay / พร้อมเพย์</p>
+          <p class="mt-1 font-bold text-gray-800">นาย ธนากรณ์ คมขำ</p>
+          <p class="text-sm text-gray-500 mt-0.5">เลขที่บัญชี: xxx-x-x1694-x</p>
+        </div>
+        <p class="text-sm text-center text-gray-500">โอนเงินแล้วอัปโหลดสลิปด้านล่าง</p>
+        <div>
+          <label for="slipUpload" class="block mb-2 text-sm font-medium text-gray-700">อัปโหลดสลิปการโอนเงิน <span class="text-red-500">*</span></label>
+          @if (slipPreviewUrl) {
+            <div class="flex justify-center mb-3">
+              <div class="relative">
+                <img [src]="slipPreviewUrl" alt="ตัวอย่างสลิปการโอนเงิน" class="border shadow max-h-48 rounded-xl" />
+                <button (click)="slipPreviewUrl = null; selectedSlip = null" title="ลบรูปสลิป" aria-label="ลบรูปสลิป"
+                  class="absolute flex items-center justify-center w-6 h-6 text-xs text-white bg-red-500 rounded-full -top-2 -right-2">✕</button>
+              </div>
+            </div>
+          }
+          <label for="slipUpload" class="flex flex-col items-center justify-center w-full transition border-2 border-gray-300 border-dashed cursor-pointer h-28 rounded-xl hover:border-red-400 hover:bg-red-50">
+            <svg class="w-8 h-8 mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <p class="text-sm text-gray-500">{{ selectedSlip ? selectedSlip.name : "คลิกเพื่อเลือกรูปสลิป" }}</p>
+            <input id="slipUpload" type="file" class="hidden" accept="image/*" (change)="onSlipSelected($event)" />
+          </label>
+        </div>
+        <button (click)="uploadSlip()" [disabled]="!selectedSlip || isUploadingSlip"
+          class="w-full py-3 font-bold text-white transition bg-gradient-to-r from-red-500 to-orange-500 rounded-xl hover:from-red-600 hover:to-orange-600 disabled:opacity-60">
+          {{ isUploadingSlip ? "กำลังอัปโหลด..." : "ยืนยันการชำระเงิน" }}
+        </button>
+      </div>
+    }
+
+    <!-- STEP 3 -->
+    @if (step === 3) {
+      <div class="p-8 space-y-4 text-center bg-white shadow-sm rounded-xl">
+        <div class="flex items-center justify-center w-20 h-20 mx-auto bg-green-100 rounded-full">
+          <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800">รับสลิปแล้ว!</h3>
+        <p class="text-gray-500">กำลังรอแอดมินตรวจสอบการชำระเงิน<br/>ระบบจะแจ้งเตือนเมื่อยืนยันเรียบร้อย</p>
+        <div class="p-4 bg-gray-50 rounded-xl">
+          <p class="text-sm text-gray-500">หมายเลข Order</p>
+          <p class="text-2xl font-bold text-gray-800">#{{ orderId }}</p>
+        </div>
+        <div class="flex gap-3">
+          <button (click)="goHome()" class="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">
+            กลับหน้าแรก
+          </button>
+          <button (click)="goToReceipt()"
+            class="flex-1 py-2.5 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:from-red-600 hover:to-orange-600 transition">
+            ดูใบเสร็จ
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+@if (toastVisible) {
+  <div [ngClass]="{ 'bg-green-600': toastType === 'success', 'bg-red-600': toastType === 'error' }"
+    class="fixed z-50 px-5 py-3 text-white shadow-lg bottom-6 right-6 rounded-xl">
+    {{ toastMessage }}
+  </div>
+}
