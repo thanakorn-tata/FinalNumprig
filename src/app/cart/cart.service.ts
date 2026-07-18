@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { CartResponse } from './cart.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
 
-  private API = 'http://localhost:8080/api/cart';
+  private API = `${environment.apiUrl}/api/cart`;
 
   // ✅ Cache จำนวนสินค้าในตะกร้า สำหรับแสดงที่ icon
   private cartCount$ = new BehaviorSubject<number>(0);

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 interface UserItem {
   id: number;
@@ -35,7 +36,7 @@ export class AdminUsersComponent implements OnInit {
   toastVisible = false;
   private toastTimeout: any;
 
-  private API = 'http://localhost:8080/api/users';
+  private API = `${environment.apiUrl}/api/users`;
 
   constructor(private http: HttpClient) {}
 

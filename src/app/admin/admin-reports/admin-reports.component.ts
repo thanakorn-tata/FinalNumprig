@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-admin-reports',
@@ -11,7 +12,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AdminReportsComponent implements OnInit {
 
-  private API = 'http://localhost:8080/api/orders';
+  private API = `${environment.apiUrl}/api/orders`;
 
   orders: any[] = [];
   filteredOrders: any[] = [];

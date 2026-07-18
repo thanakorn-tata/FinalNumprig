@@ -1,3 +1,5 @@
+import { environment } from '../../environments/environment';
+
 export interface Product {
   id: number;
   name: string;
@@ -10,5 +12,5 @@ export interface Product {
 }
 
 export function getImageUrl(id: number): string {
-  return `http://localhost:8080/api/products/${id}/image`;
+  return `${environment.apiUrl}/api/products/${id}/image`;
 }

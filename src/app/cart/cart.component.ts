@@ -4,6 +4,7 @@ import { CartService } from './cart.service';
 import { CartItem, CartResponse } from './cart.model';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-cart',
@@ -45,7 +46,7 @@ export class CartComponent implements OnInit {
 
         // ✅ ถ้าตะกร้าว่าง ให้เช็คว่ามี pending order ค้างไหม
         if (this.items.length === 0) {
-          this.http.get<any[]>('http://localhost:8080/api/orders/my', { withCredentials: true }).subscribe({
+          this.http.get<any[]>(`${environment.apiUrl}/api/orders/my`, { withCredentials: true }).subscribe({
             next: (orders) => {
               const pending = orders.find(o => o.status === 'PENDING_PAYMENT');
               this.pendingOrderId = pending?.id ?? null;

@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private API = 'http://localhost:8080/api/auth';
+  private API = `${environment.apiUrl}/api/auth`;
 
   // undefined = ยังไม่โหลด, null = guest, object = login แล้ว
   private user$ = new BehaviorSubject<any>(undefined);

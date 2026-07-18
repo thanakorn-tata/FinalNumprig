@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-receipt',
@@ -22,7 +23,7 @@ export class ReceiptComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     this.http
-      .get<any>(`http://localhost:8080/api/orders/${id}`, {
+      .get<any>(`${environment.apiUrl}/api/orders/${id}`, {
         withCredentials: true,
       })
       .subscribe({

@@ -5,6 +5,7 @@ import { ProductService } from '../../product/product.service';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Chart, registerables } from 'chart.js';
+import { environment } from '../../../environments/environment';
 
 Chart.register(...registerables);
 
@@ -44,8 +45,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     forkJoin({
       products: this.productService.getAll(),
-      users: this.http.get<any[]>('http://localhost:8080/api/users', { withCredentials: true }),
-      orders: this.http.get<any[]>('http://localhost:8080/api/orders/admin', { withCredentials: true })
+      users: this.http.get<any[]>(`${environment.apiUrl}/api/users`, { withCredentials: true }),
+      orders: this.http.get<any[]>(`${environment.apiUrl}/api/orders/admin`, { withCredentials: true })
     }).subscribe({
       next: ({ products, users, orders }) => {
         this.allProducts = products as any[];

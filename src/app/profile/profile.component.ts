@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { filter, take } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-profile',
@@ -13,7 +14,7 @@ import { filter, take } from 'rxjs/operators';
 })
 export class ProfileComponent implements OnInit {
 
-  private API = 'http://localhost:8080/api/users';
+  private API = `${environment.apiUrl}/api/users`;
 
   profileForm = {
     username: '',

@@ -7,6 +7,7 @@ import { CartService } from "../cart/cart.service";
 import { CartItem, CartResponse } from "../cart/cart.model";
 import * as QRCode from "qrcode";
 import generatePayload from "promptpay-qr";
+import { environment } from "../../environments/environment";
 
 interface SavedAddress {
   id: number;
@@ -25,8 +26,8 @@ interface SavedAddress {
 })
 export class CheckoutComponent implements OnInit {
 
-  private API       = "http://localhost:8080/api/orders";
-  private ADDR_API  = "http://localhost:8080/api/addresses";
+  private API       = `${environment.apiUrl}/api/orders`;
+  private ADDR_API  = `${environment.apiUrl}/api/addresses`;
   private PROMPTPAY_ID = "0937460033";
 
   step = 1;
